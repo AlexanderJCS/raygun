@@ -54,6 +54,10 @@ Camera camera_init() {
     return cam;
 }
 
+vec3 ray_at(Ray r, float t) {
+    return r.origin + t * r.direction;
+}
+
 
 Ray camera_get_ray(Camera cam, ivec2 pixel_coords) {
     vec3 offset = vec3(0, 0, 0);  // todo: make random offset ([-0.5, 0.5], [-0.5, 0.5], 0)
@@ -65,26 +69,39 @@ Ray camera_get_ray(Camera cam, ivec2 pixel_coords) {
     return Ray(ray_origin, ray_direction);
 }
 
-bool hit(vec3 center, float radius, Ray ray) {
+float hit(vec3 center, float radius, Ray ray) {
     vec3 oc = center - ray.origin;
     float a = dot(ray.direction, ray.direction);
     float b = -2 * dot(ray.direction, oc);
     float c = dot(oc, oc) - radius * radius;
     float discriminant = b * b - 4 * a * c;
-    return discriminant >= 0;
+
+    if (discriminant < 0) {
+        return -1;
+    } else {
+        return (-b - sqrt(discriminant)) / (2 * a);
+    }
 }
 
 vec3 camera_ray_color(Camera cam, ivec2 pixel_coords) {
     Ray r = camera_get_ray(cam, pixel_coords);
-    if (hit(vec3(0, 0, -1), 0.5, r)) {
-        return vec3(1, 0, 0);
+
+    float t = hit(vec3(0, 0, -1), 0.5, r);
+    if (t > 0) {
+        vec3 normal = normalize(ray_at(r, t) - vec3(0, 0, -1));
+        return 0.5 * (normal + 1);
     }
 
-    return vec3(0, 0, 0);
+    vec3 unit_direction = normalize(r.direction);
+    float a = 0.5 * (unit_direction.y + 1.0);
+    return (1 - a) * vec3(1, 1, 1) + a * vec3(0.5, 0.7, 1.0);
 }
 
 void main() {
+    ivec2 dimensions = imageSize(screen);
     ivec2 pixel_coords = ivec2(gl_GlobalInvocationID.xy);
+    pixel_coords = ivec2(pixel_coords.x, dimensions.y - pixel_coords.y);
+
     Camera cam = camera_init();
     vec3 pixel = camera_ray_color(cam, ivec2(gl_GlobalInvocationID.xy));
 
