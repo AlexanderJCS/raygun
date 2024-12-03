@@ -21,6 +21,11 @@ struct Camera {
 };
 
 
+float length_squared(vec3 v) {
+    return dot(v, v);
+}
+
+
 Camera camera_init() {
     ivec2 dimensions = imageSize(screen);
 
@@ -72,14 +77,14 @@ Ray camera_get_ray(Camera cam, ivec2 pixel_coords) {
 float hit(vec3 center, float radius, Ray ray) {
     vec3 oc = center - ray.origin;
     float a = dot(ray.direction, ray.direction);
-    float b = -2 * dot(ray.direction, oc);
-    float c = dot(oc, oc) - radius * radius;
-    float discriminant = b * b - 4 * a * c;
+    float h = dot(ray.direction, oc);
+    float c = length_squared(oc) - radius * radius;
+    float discriminant = h * h - a * c;
 
     if (discriminant < 0) {
         return -1;
     } else {
-        return (-b - sqrt(discriminant)) / (2 * a);
+        return (h - sqrt(discriminant)) / a;
     }
 }
 
