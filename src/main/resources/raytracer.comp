@@ -3,6 +3,13 @@
 layout(local_size_x = 8, local_size_y = 4, local_size_z = 1) in;
 layout(rgba32f, binding = 0) uniform image2D screen;
 
+struct HitRecord {
+    vec3 p;
+    vec3 normal;
+    float t;
+    bool front_face;
+};
+
 struct Ray {
     vec3 origin;
     vec3 direction;
@@ -19,6 +26,12 @@ struct Camera {
     vec3 pixel00_loc;
     vec3 pixel_delta_u, pixel_delta_v;
 };
+
+
+void set_face_normal(Ray r, vec3 outward_normal, inout HitRecord rec) {
+    rec.front_face = dot(r.direction, outward_normal) < 0;
+    rec.normal = rec.front_face ? outward_normal : -outward_normal;
+}
 
 
 float length_squared(vec3 v) {
@@ -74,7 +87,7 @@ Ray camera_get_ray(Camera cam, ivec2 pixel_coords) {
     return Ray(ray_origin, ray_direction);
 }
 
-float hit(vec3 center, float radius, Ray ray) {
+bool hit(vec3 center, float radius, Ray ray, float ray_tmin, float ray_tmax, inout HitRecord rec) {
     vec3 oc = center - ray.origin;
     float a = dot(ray.direction, ray.direction);
     float h = dot(ray.direction, oc);
@@ -82,19 +95,34 @@ float hit(vec3 center, float radius, Ray ray) {
     float discriminant = h * h - a * c;
 
     if (discriminant < 0) {
-        return -1;
-    } else {
-        return (h - sqrt(discriminant)) / a;
+        return false;
     }
+
+    float sqrtd = sqrt(discriminant);
+
+    // Find the nearest root that lies in the acceptable range
+    float root = (h - sqrtd) / a;
+    if (root <= ray_tmin || ray_tmax <= root) {
+        root = (h + sqrtd) / a;
+        if (root <= ray_tmin || ray_tmax <= root) {
+            return false;
+        }
+    }
+
+    rec.t = root;
+    rec.p = ray_at(ray, rec.t);
+    vec3 outward_normal = (rec.p - center) / radius;
+    set_face_normal(ray, outward_normal, rec);
+
+    return true;
 }
 
 vec3 camera_ray_color(Camera cam, ivec2 pixel_coords) {
     Ray r = camera_get_ray(cam, pixel_coords);
 
-    float t = hit(vec3(0, 0, -1), 0.5, r);
-    if (t > 0) {
-        vec3 normal = normalize(ray_at(r, t) - vec3(0, 0, -1));
-        return 0.5 * (normal + 1);
+    HitRecord rec;
+    if (hit(vec3(0, 0, -1), 0.5, r, 0, 1000, rec)) {
+        return 0.5 * (rec.normal + 1);
     }
 
     vec3 unit_direction = normalize(r.direction);
