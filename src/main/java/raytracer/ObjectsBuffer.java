@@ -27,10 +27,10 @@ public class ObjectsBuffer {
 
         float[] centersFloat = new float[MAX_OBJECT_COUNT * 4];
         for (int i = 0; i < centers.length; i++) {
-            centersFloat[i * 3] = centers[i].x;
-            centersFloat[i * 3 + 1] = centers[i].y;
-            centersFloat[i * 3 + 2] = centers[i].z;
-            centersFloat[i * 3 + 3] = 0;  // requires a vec4 due to std430 layout
+            centersFloat[i * 4] = centers[i].x;
+            centersFloat[i * 4 + 1] = centers[i].y;
+            centersFloat[i * 4 + 2] = centers[i].z;
+            centersFloat[i * 4 + 3] = 0;  // requires a vec4 due to std430 layout
         }
 
         float[] radiiPadded = new float[MAX_OBJECT_COUNT];
