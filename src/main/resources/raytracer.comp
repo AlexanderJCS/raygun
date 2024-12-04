@@ -17,6 +17,7 @@ layout(std430, binding = 1) buffer ObjectsBuffer {
 
 uniform int num_objects;
 uniform int num_materials;
+uniform int frame_counter;
 
 struct HitRecord {
     vec3 p;
@@ -43,17 +44,67 @@ struct Camera {
     vec3 pixel_delta_u, pixel_delta_v;
 };
 
-
-void set_face_normal(Ray r, vec3 outward_normal, inout HitRecord rec) {
-    rec.front_face = dot(r.direction, outward_normal) < 0;
-    rec.normal = rec.front_face ? outward_normal : -outward_normal;
-}
-
+float rand_seed = dot(gl_GlobalInvocationID.xy, gl_GlobalInvocationID.xy) + frame_counter;
+int rand_counter = 0;
 
 float length_squared(vec3 v) {
     return dot(v, v);
 }
 
+// Credit for the hash, float_construct, and random(float x) functions: https://stackoverflow.com/a/17479300/18758660
+uint hash( uint x ) {
+    x += ( x << 10u );
+    x ^= ( x >>  6u );
+    x += ( x <<  3u );
+    x ^= ( x >> 11u );
+    x += ( x << 15u );
+    return x;
+}
+
+float float_construct(uint m ) {
+    const uint ieee_mantissa = 0x007FFFFFu; // binary32 mantissa bitmask
+    const uint ieee_one = 0x3F800000u;      // 1.0 in IEEE binary32
+
+    m &= ieee_mantissa;                     // Keep only mantissa bits (fractional part)
+    m |= ieee_one;                          // Add fractional part to 1.0
+
+    float  f = uintBitsToFloat( m );        // Range [1:2]
+    return f - 1.0;                         // Range [0:1]
+}
+
+float random(float x) {
+    return float_construct(hash(floatBitsToUint(x)));
+}
+
+float random() {
+    return random(rand_seed + rand_counter++);
+}
+
+vec3 random_vec3() {
+    return vec3(random(), random(), random());
+}
+
+vec3 random_sphere() {
+    vec3 p;
+    do {
+        p = 2.0 * random_vec3() - vec3(1.0);
+    } while (length_squared(p) >= 1.0);
+    return p;
+}
+
+vec3 random_hemisphere(vec3 normal) {
+    vec3 in_unit_sphere = random_sphere();
+    if (dot(in_unit_sphere, normal) > 0.0) {
+        return in_unit_sphere;
+    } else {
+        return -in_unit_sphere;
+    }
+}
+
+void set_face_normal(Ray r, vec3 outward_normal, inout HitRecord rec) {
+    rec.front_face = dot(r.direction, outward_normal) < 0;
+    rec.normal = rec.front_face ? outward_normal : -outward_normal;
+}
 
 Camera camera_init() {
     ivec2 dimensions = imageSize(screen);
@@ -153,9 +204,9 @@ bool hit_world(Ray r, float t_min, float t_max, inout HitRecord rec) {
 
 bool material_scatter(int material_id, Ray r_in, HitRecord rec, inout vec3 attenuation, inout Ray scattered) {
     if (material_id == 0 || material_id == 1) {
-        vec3 target = rec.p + rec.normal + vec3(1, 1, 1);
+        vec3 target = rec.p + rec.normal;
         scattered.origin = rec.p;
-        scattered.direction = target - rec.p;
+        scattered.direction = random_hemisphere(normalize(rec.normal));
         attenuation = albedos[rec.material_id];
         return true;
     }
@@ -207,7 +258,10 @@ void main() {
     pixel_coords = ivec2(pixel_coords.x, dimensions.y - pixel_coords.y);
 
     Camera cam = camera_init();
-    vec3 pixel = render(cam, ivec2(gl_GlobalInvocationID.xy));
+    vec3 newPixel = render(cam, ivec2(gl_GlobalInvocationID.xy));
+
+    vec3 oldPixel = imageLoad(screen, pixel_coords).rgb;
+    vec3 pixel = (oldPixel * float(frame_counter) + newPixel) / float(frame_counter + 1);
 
     imageStore(screen, pixel_coords, vec4(pixel, 1));
 }

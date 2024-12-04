@@ -25,11 +25,13 @@ public class RayTracer {
     }
 
     public void run() {
+        int frameCounter = 0;
+
         while (Window.shouldRun()) {
             materialsBuffer.bind();
             objectsBuffer.bind();
             screenTexture.bindWrite();
-            rayTracerCompute.compute(width, height, objectsBuffer.numObjects(), 0);
+            rayTracerCompute.compute(width, height, objectsBuffer.numObjects(), 0, frameCounter);
             screenTexture.unbindWrite();
             objectsBuffer.unbind();
             materialsBuffer.unbind();
@@ -42,6 +44,7 @@ public class RayTracer {
 
             Window.update();
             Window.clear();
+            frameCounter++;
         }
     }
 
