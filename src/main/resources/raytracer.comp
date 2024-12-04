@@ -6,7 +6,7 @@ layout(local_size_x = 8, local_size_y = 4, local_size_z = 1) in;
 layout(rgba32f, binding = 0) uniform image2D screen;
 
 layout(std430, binding = 0) buffer MaterialsBuffer {
-    vec3 colors[MAX_COUNT];
+    vec3 albedos[MAX_COUNT];
 };
 
 layout(std430, binding = 1) buffer ObjectsBuffer {
@@ -22,6 +22,7 @@ struct HitRecord {
     vec3 p;
     vec3 normal;
     float t;
+    int material_id;
     bool front_face;
 };
 
@@ -102,7 +103,7 @@ Ray camera_get_ray(Camera cam, ivec2 pixel_coords) {
     return Ray(ray_origin, ray_direction);
 }
 
-bool hit_sphere(vec3 center, float radius, Ray ray, float ray_tmin, float ray_tmax, inout HitRecord rec) {
+bool hit_sphere(vec3 center, float radius, int material_id, Ray ray, float ray_tmin, float ray_tmax, inout HitRecord rec) {
     vec3 oc = center - ray.origin;
     float a = dot(ray.direction, ray.direction);
     float h = dot(ray.direction, oc);
@@ -126,6 +127,7 @@ bool hit_sphere(vec3 center, float radius, Ray ray, float ray_tmin, float ray_tm
 
     rec.t = root;
     rec.p = ray_at(ray, rec.t);
+    rec.material_id = material_id;
     vec3 outward_normal = (rec.p - center) / radius;
     set_face_normal(ray, outward_normal, rec);
 
@@ -138,7 +140,7 @@ bool hit_world(Ray r, float t_min, float t_max, inout HitRecord rec) {
     float closest_so_far = t_max;
 
     for (int i = 0; i < num_objects; i++) {
-        if (hit_sphere(centers[i], radii[i], r, t_min, closest_so_far, temp_rec)) {
+        if (hit_sphere(centers[i], radii[i], material_ids[i], r, t_min, closest_so_far, temp_rec)) {
             hit_anything = true;
             closest_so_far = temp_rec.t;
             rec = temp_rec;
@@ -148,17 +150,55 @@ bool hit_world(Ray r, float t_min, float t_max, inout HitRecord rec) {
     return hit_anything;
 }
 
-vec3 camera_ray_color(Camera cam, ivec2 pixel_coords) {
-    Ray r = camera_get_ray(cam, pixel_coords);
 
-    HitRecord rec;
-    if (hit_world(r, 0, 1000, rec)) {
-        return 0.5 * (rec.normal + 1);
+bool material_scatter(int material_id, Ray r_in, HitRecord rec, inout vec3 attenuation, inout Ray scattered) {
+    if (material_id == 0 || material_id == 1) {
+        vec3 target = rec.p + rec.normal + vec3(1, 1, 1);
+        scattered.origin = rec.p;
+        scattered.direction = target - rec.p;
+        attenuation = albedos[rec.material_id];
+        return true;
     }
 
-    vec3 unit_direction = normalize(r.direction);
-    float a = 0.5 * (unit_direction.y + 1.0);
-    return (1 - a) * vec3(1, 1, 1) + a * vec3(0.5, 0.7, 1.0);
+    return false;
+}
+
+
+vec3 ray_color(Ray r) {
+    vec3 color = vec3(1.0); // Accumulated color
+    vec3 attenuation = vec3(1.0); // Attenuation for each ray segment
+
+    for (int i = 0; i < 10; i++) { // Max depth
+        HitRecord rec;
+        if (hit_world(r, 0.001, 1000.0, rec)) {
+            // If the ray hits an object, compute scattered ray
+            Ray scattered;
+            if (material_scatter(rec.material_id, r, rec, attenuation, scattered)) {
+                r = scattered; // Update the current ray
+                color *= attenuation; // Apply the material's attenuation
+            } else {
+                // Absorbed ray (no scatter): return black
+                return color;
+            }
+        } else {
+            // Missed all objects: apply background gradient
+            vec3 unit_direction = normalize(r.direction);
+            float t = 0.5 * (unit_direction.y + 1.0);
+            vec3 background = (1.0 - t) * vec3(1.0, 1.0, 1.0) + t * vec3(0.5, 0.7, 1.0);
+            return color * background; // Blend with accumulated color
+        }
+    }
+
+    // Max depth reached: return accumulated color
+    return color;
+}
+
+
+
+vec3 render(Camera cam, ivec2 pixel_coords) {
+    // 10 is max depth
+    Ray r = camera_get_ray(cam, pixel_coords);
+    return ray_color(r);
 }
 
 void main() {
@@ -167,7 +207,7 @@ void main() {
     pixel_coords = ivec2(pixel_coords.x, dimensions.y - pixel_coords.y);
 
     Camera cam = camera_init();
-    vec3 pixel = camera_ray_color(cam, ivec2(gl_GlobalInvocationID.xy));
+    vec3 pixel = render(cam, ivec2(gl_GlobalInvocationID.xy));
 
     imageStore(screen, pixel_coords, vec4(pixel, 1));
 }
