@@ -30,4 +30,8 @@ public class ScreenTexture {
     public void unbindRead() {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
+
+    public void cleanup() {
+        glDeleteTextures(texture);
+    }
 }

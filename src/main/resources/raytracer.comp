@@ -1,7 +1,22 @@
 #version 450
 
+#define MAX_COUNT 100
+
 layout(local_size_x = 8, local_size_y = 4, local_size_z = 1) in;
 layout(rgba32f, binding = 0) uniform image2D screen;
+
+layout(std430, binding = 0) buffer MaterialsBuffer {
+    vec3 colors[MAX_COUNT];
+};
+
+layout(std430, binding = 1) buffer ObjectsBuffer {
+    vec3 centers[MAX_COUNT];
+    float radii[MAX_COUNT];
+    int material_ids[MAX_COUNT];
+};
+
+uniform int num_objects;
+uniform int num_materials;
 
 struct HitRecord {
     vec3 p;
@@ -87,7 +102,7 @@ Ray camera_get_ray(Camera cam, ivec2 pixel_coords) {
     return Ray(ray_origin, ray_direction);
 }
 
-bool hit(vec3 center, float radius, Ray ray, float ray_tmin, float ray_tmax, inout HitRecord rec) {
+bool hit_sphere(vec3 center, float radius, Ray ray, float ray_tmin, float ray_tmax, inout HitRecord rec) {
     vec3 oc = center - ray.origin;
     float a = dot(ray.direction, ray.direction);
     float h = dot(ray.direction, oc);
@@ -117,11 +132,27 @@ bool hit(vec3 center, float radius, Ray ray, float ray_tmin, float ray_tmax, ino
     return true;
 }
 
+bool hit_world(Ray r, float t_min, float t_max, inout HitRecord rec) {
+    HitRecord temp_rec;
+    bool hit_anything = false;
+    float closest_so_far = t_max;
+
+    for (int i = 0; i < num_objects; i++) {
+        if (hit_sphere(centers[i], radii[i], r, t_min, closest_so_far, temp_rec)) {
+            hit_anything = true;
+            closest_so_far = temp_rec.t;
+            rec = temp_rec;
+        }
+    }
+
+    return hit_anything;
+}
+
 vec3 camera_ray_color(Camera cam, ivec2 pixel_coords) {
     Ray r = camera_get_ray(cam, pixel_coords);
 
     HitRecord rec;
-    if (hit(vec3(0, 0, -1), 0.5, r, 0, 1000, rec)) {
+    if (hit_world(r, 0, 1000, rec)) {
         return 0.5 * (rec.normal + 1);
     }
 

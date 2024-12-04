@@ -1,10 +1,13 @@
 package raytracer;
 
+import org.joml.Vector3f;
+
 public class RayTracer {
     private final ScreenQuad screenQuad;
     private final TextureShader textureShader;
     private final RayTracerCompute rayTracerCompute;
     private final ScreenTexture screenTexture;
+    private final ObjectsBuffer objectsBuffer;
 
     private final int width, height;
 
@@ -16,13 +19,16 @@ public class RayTracer {
         textureShader = new TextureShader();
         rayTracerCompute = new RayTracerCompute();
         screenTexture = new ScreenTexture(width, height);
+        objectsBuffer = new ObjectsBuffer(new Vector3f[]{new Vector3f(0, -100.5f, -1), new Vector3f(0, 0, -1)}, new float[]{100f, 0.5f}, new int[]{0, 0});
     }
 
     public void run() {
         while (Window.shouldRun()) {
+            objectsBuffer.bind();
             screenTexture.bindWrite();
-            rayTracerCompute.compute(width, height);
+            rayTracerCompute.compute(width, height, objectsBuffer.numObjects(), 0);
             screenTexture.unbindWrite();
+            objectsBuffer.unbind();
 
             screenTexture.bindRead();
             textureShader.bind();
@@ -38,5 +44,8 @@ public class RayTracer {
     public void cleanup() {
         screenQuad.cleanup();
         textureShader.cleanup();
+        rayTracerCompute.cleanup();
+        screenTexture.cleanup();
+        objectsBuffer.cleanup();
     }
 }
