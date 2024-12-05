@@ -54,7 +54,7 @@ struct Camera {
     vec3 pixel_delta_u, pixel_delta_v;
 };
 
-float rand_seed = dot(gl_GlobalInvocationID.xy, gl_GlobalInvocationID.xy) + frame_counter;
+float rand_seed = dot(gl_GlobalInvocationID.xy, gl_GlobalInvocationID.xy) + frame_counter * gl_GlobalInvocationID.y;
 int rand_counter = 0;
 
 float length_squared(vec3 v) {
@@ -226,34 +226,29 @@ bool material_scatter(int material_id, Ray r_in, HitRecord rec, inout vec3 atten
 
 
 vec3 ray_color(Ray r) {
-    vec3 color = vec3(1.0); // Accumulated color
-    vec3 attenuation = vec3(1.0); // Attenuation for each ray segment
+    vec3 color = vec3(1.0);
+    vec3 attenuation = vec3(1.0);
 
-    for (int i = 0; i < 10; i++) { // Max depth
+    for (int i = 0; i < 10; i++) {
         HitRecord rec;
         if (hit_world(r, 0.001, 1000.0, rec)) {
-            // If the ray hits an object, compute scattered ray
             Ray scattered;
             if (material_scatter(rec.material_id, r, rec, attenuation, scattered)) {
-                r = scattered; // Update the current ray
-                color *= attenuation; // Apply the material's attenuation
+                r = scattered;
+                color *= attenuation;
             } else {
-                // Absorbed ray (no scatter): return black
                 return color;
             }
         } else {
-            // Missed all objects: apply background gradient
             vec3 unit_direction = normalize(r.direction);
             float t = 0.5 * (unit_direction.y + 1.0);
             vec3 background = (1.0 - t) * vec3(1.0, 1.0, 1.0) + t * vec3(0.5, 0.7, 1.0);
-            return color * background; // Blend with accumulated color
+            return color * background;
         }
     }
 
-    // Max depth reached: return accumulated color
     return color;
 }
-
 
 
 vec3 render(Camera cam, ivec2 pixel_coords) {
