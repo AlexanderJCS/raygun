@@ -42,9 +42,13 @@ public class ObjectsBuffer {
         ssbo = glGenBuffers();
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
         glBufferData(GL_SHADER_STORAGE_BUFFER, (long) (MAX_OBJECT_COUNT * 5) * Float.BYTES + (long) MAX_OBJECT_COUNT * Integer.BYTES, GL_DYNAMIC_DRAW);
-        glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, centersFloat);
-        glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) MAX_OBJECT_COUNT * 4 * Float.BYTES, radiiPadded);
-        glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) MAX_OBJECT_COUNT * 5 * Float.BYTES, materialIDsPadded);
+
+        for (int i = 0; i < MAX_OBJECT_COUNT; i++) {
+            // upload in the order of centers, radii, materialIDs as a densely packed array
+            glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) i * 8 * Float.BYTES, new float[]{centersFloat[i * 4], centersFloat[i * 4 + 1], centersFloat[i * 4 + 2]});
+            glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) (i * 8 + 3) * Float.BYTES, new float[]{radiiPadded[i]});
+            glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) (i * 8 + 4) * Float.BYTES, new int[]{materialIDsPadded[i]});
+        }
     }
 
     public int numObjects() {

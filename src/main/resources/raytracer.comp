@@ -5,14 +5,22 @@
 layout(local_size_x = 8, local_size_y = 4, local_size_z = 1) in;
 layout(rgba32f, binding = 0) uniform image2D screen;
 
+struct Material {
+    vec3 albedo;
+};
+
 layout(std430, binding = 0) buffer MaterialsBuffer {
-    vec3 albedos[MAX_COUNT];
+    Material materials[MAX_COUNT];
+};
+
+struct Sphere {
+    vec3 center;
+    float radius;
+    int material_id;
 };
 
 layout(std430, binding = 1) buffer ObjectsBuffer {
-    vec3 centers[MAX_COUNT];
-    float radii[MAX_COUNT];
-    int material_ids[MAX_COUNT];
+    Sphere objects[MAX_COUNT];
 };
 
 uniform int num_objects;
@@ -191,7 +199,7 @@ bool hit_world(Ray r, float t_min, float t_max, inout HitRecord rec) {
     float closest_so_far = t_max;
 
     for (int i = 0; i < num_objects; i++) {
-        if (hit_sphere(centers[i], radii[i], material_ids[i], r, t_min, closest_so_far, temp_rec)) {
+        if (hit_sphere(objects[i].center, objects[i].radius, objects[i].material_id, r, t_min, closest_so_far, temp_rec)) {
             hit_anything = true;
             closest_so_far = temp_rec.t;
             rec = temp_rec;
@@ -207,7 +215,7 @@ bool material_scatter(int material_id, Ray r_in, HitRecord rec, inout vec3 atten
         vec3 target = rec.p + rec.normal;
         scattered.origin = rec.p;
         scattered.direction = random_hemisphere(normalize(rec.normal));
-        attenuation = albedos[rec.material_id];
+        attenuation = materials[rec.material_id].albedo;
         return true;
     }
 
