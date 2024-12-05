@@ -164,11 +164,11 @@ Ray camera_get_ray(Camera cam, ivec2 pixel_coords) {
     return Ray(ray_origin, ray_direction);
 }
 
-bool hit_sphere(vec3 center, float radius, int material_id, Ray ray, float ray_tmin, float ray_tmax, inout HitRecord rec) {
-    vec3 oc = center - ray.origin;
+bool hit_sphere(Sphere sphere, Ray ray, float ray_tmin, float ray_tmax, inout HitRecord rec) {
+    vec3 oc = sphere.center - ray.origin;
     float a = dot(ray.direction, ray.direction);
     float h = dot(ray.direction, oc);
-    float c = length_squared(oc) - radius * radius;
+    float c = length_squared(oc) - sphere.radius * sphere.radius;
     float discriminant = h * h - a * c;
 
     if (discriminant < 0) {
@@ -188,8 +188,8 @@ bool hit_sphere(vec3 center, float radius, int material_id, Ray ray, float ray_t
 
     rec.t = root;
     rec.p = ray_at(ray, rec.t);
-    rec.material_id = material_id;
-    vec3 outward_normal = (rec.p - center) / radius;
+    rec.material_id = sphere.material_id;
+    vec3 outward_normal = (rec.p - sphere.center) / sphere.radius;
     set_face_normal(ray, outward_normal, rec);
 
     return true;
@@ -201,7 +201,7 @@ bool hit_world(Ray r, float t_min, float t_max, inout HitRecord rec) {
     float closest_so_far = t_max;
 
     for (int i = 0; i < num_objects; i++) {
-        if (hit_sphere(objects[i].center, objects[i].radius, objects[i].material_id, r, t_min, closest_so_far, temp_rec)) {
+        if (hit_sphere(objects[i], r, t_min, closest_so_far, temp_rec)) {
             hit_anything = true;
             closest_so_far = temp_rec.t;
             rec = temp_rec;
