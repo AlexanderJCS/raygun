@@ -9,7 +9,7 @@ import org.joml.Vector3f;
  */
 public class ObjectsBuffer {
     // as defined by the compute shader #define MAX_COUNT [max_count]
-    private static final int MAX_OBJECT_COUNT = 100;
+    private static final int MAX_OBJECT = 100;
 
     private final int ssbo;
     private final int numObjects;
@@ -19,33 +19,29 @@ public class ObjectsBuffer {
             throw new IllegalArgumentException("centers, radii, and materialIDs must have the same length");
         }
 
-        if (centers.length > MAX_OBJECT_COUNT) {
-            throw new IllegalArgumentException("Too many objects, max is " + MAX_OBJECT_COUNT);
+        if (centers.length > MAX_OBJECT) {
+            throw new IllegalArgumentException("Too many objects, max is " + MAX_OBJECT);
         }
 
         this.numObjects = centers.length;
 
-        float[] centersFloat = new float[MAX_OBJECT_COUNT * 4];
-        for (int i = 0; i < centers.length; i++) {
-            centersFloat[i * 4] = centers[i].x;
-            centersFloat[i * 4 + 1] = centers[i].y;
-            centersFloat[i * 4 + 2] = centers[i].z;
-            centersFloat[i * 4 + 3] = 0;  // requires a vec4 due to std430 layout
-        }
+        float[] centersFloat = ArrayUtil.toVec3FloatArray(centers);
+        float[] centersPadded = new float[MAX_OBJECT * 3];
+        System.arraycopy(centersFloat, 0, centersPadded, 0, centersFloat.length);
 
-        float[] radiiPadded = new float[MAX_OBJECT_COUNT];
+        float[] radiiPadded = new float[MAX_OBJECT];
         System.arraycopy(radii, 0, radiiPadded, 0, radii.length);
 
-        int[] materialIDsPadded = new int[MAX_OBJECT_COUNT];
+        int[] materialIDsPadded = new int[MAX_OBJECT];
         System.arraycopy(materialIDs, 0, materialIDsPadded, 0, materialIDs.length);
 
         ssbo = glGenBuffers();
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
-        glBufferData(GL_SHADER_STORAGE_BUFFER, (long) (MAX_OBJECT_COUNT * 5) * Float.BYTES + (long) MAX_OBJECT_COUNT * Integer.BYTES, GL_DYNAMIC_DRAW);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, (long) (MAX_OBJECT * 5) * Float.BYTES + (long) MAX_OBJECT * Integer.BYTES, GL_DYNAMIC_DRAW);
 
-        for (int i = 0; i < MAX_OBJECT_COUNT; i++) {
+        for (int i = 0; i < MAX_OBJECT; i++) {
             // upload in the order of centers, radii, materialIDs as a densely packed array
-            glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) i * 8 * Float.BYTES, new float[]{centersFloat[i * 4], centersFloat[i * 4 + 1], centersFloat[i * 4 + 2]});
+            glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) i * 8 * Float.BYTES, new float[]{centersPadded[i * 3], centersPadded[i * 3 + 1], centersPadded[i * 3 + 2]});
             glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) (i * 8 + 3) * Float.BYTES, new float[]{radiiPadded[i]});
             glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) (i * 8 + 4) * Float.BYTES, new int[]{materialIDsPadded[i]});
         }
