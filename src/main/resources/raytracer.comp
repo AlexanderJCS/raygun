@@ -9,6 +9,8 @@ struct Material {
     vec3 albedo;
     vec3 emissionColor;
     float emissionStrength;
+    int type;  // 0 = diffuse, 1 = metal, 2 = glass
+    float fuzz;  // for metal
 };
 
 layout(std430, binding = 0) buffer MaterialsBuffer {
@@ -206,10 +208,20 @@ bool hit_world(Ray r, float t_min, float t_max, inout HitRecord rec) {
 
 
 bool material_scatter(int material_id, Ray r_in, HitRecord rec, inout Ray scattered) {
-    if (material_id == 0 || material_id == 1) {
+    Material material = materials[material_id];
+    if (material.type == 0) {
         scattered.origin = rec.p;
         scattered.direction = rec.normal + random_unit_vec();
+
         return true;
+    } else if (material.type == 1) {
+        vec3 reflected = reflect(r_in.direction, rec.normal);
+        reflected = normalize(reflected + material.fuzz * random_unit_vec());
+
+        scattered.origin = rec.p;
+        scattered.direction = reflected;
+
+        return dot(scattered.direction, rec.normal) > 0;
     }
 
     return false;

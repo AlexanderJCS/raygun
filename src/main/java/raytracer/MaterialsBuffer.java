@@ -8,7 +8,7 @@ public class MaterialsBuffer {
     private final int ssbo;
     private static final int MAX_MATERIALS = 100;
 
-    public MaterialsBuffer(Vector3f[] albedos, Vector3f[] emissionColor, float[] emissionStrength) {
+    public MaterialsBuffer(Vector3f[] albedos, Vector3f[] emissionColor, float[] emissionStrength, int[] materialType, float[] fuzz) {
         float[] albedosFloat = ArrayUtil.toVec3FloatArray(albedos);
         float[] emissionColorFloat = ArrayUtil.toVec3FloatArray(emissionColor);
 
@@ -21,14 +21,22 @@ public class MaterialsBuffer {
         float[] emissionStrengthPadded = new float[MAX_MATERIALS];
         System.arraycopy(emissionStrength, 0, emissionStrengthPadded, 0, emissionStrength.length);
 
+        float[] fuzzPadded = new float[MAX_MATERIALS];
+        System.arraycopy(fuzz, 0, fuzzPadded, 0, fuzz.length);
+
+        int[] materialTypePadded = new int[MAX_MATERIALS];
+        System.arraycopy(materialType, 0, materialTypePadded, 0, materialType.length);
+
         ssbo = glGenBuffers();
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
-        glBufferData(GL_SHADER_STORAGE_BUFFER, (long) (MAX_MATERIALS * 8) * Float.BYTES, GL_DYNAMIC_DRAW);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, (long) (MAX_MATERIALS * 10) * Float.BYTES, GL_DYNAMIC_DRAW);
 
         for (int i = 0; i < MAX_MATERIALS; i++) {
-            glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) i * 8 * Float.BYTES, new float[]{albedosPadded[i * 3], albedosPadded[i * 3 + 1], albedosPadded[i * 3 + 2]});
-            glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) (i * 8 + 4) * Float.BYTES, new float[]{emissionColorPadded[i * 3], emissionColorPadded[i * 3 + 1], emissionColorPadded[i * 3 + 2]});
-            glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) (i * 8 + 7) * Float.BYTES, new float[]{emissionStrengthPadded[i]});
+            glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) i * 12 * Float.BYTES, new float[]{albedosPadded[i * 3], albedosPadded[i * 3 + 1], albedosPadded[i * 3 + 2]});
+            glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) (i * 12 + 4) * Float.BYTES, new float[]{emissionColorPadded[i * 3], emissionColorPadded[i * 3 + 1], emissionColorPadded[i * 3 + 2]});
+            glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) (i * 12 + 7) * Float.BYTES, new float[]{emissionStrengthPadded[i]});
+            glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) (i * 12 + 8) * Float.BYTES, new float[]{materialTypePadded[i]});
+            glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) (i * 12 + 9) * Float.BYTES, new float[]{fuzzPadded[i]});
         }
     }
 
