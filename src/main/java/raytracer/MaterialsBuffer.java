@@ -23,12 +23,12 @@ public class MaterialsBuffer {
 
         ssbo = glGenBuffers();
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
-        glBufferData(GL_SHADER_STORAGE_BUFFER, (long) (MAX_MATERIALS * 7) * Float.BYTES, GL_DYNAMIC_DRAW);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, (long) (MAX_MATERIALS * 8) * Float.BYTES, GL_DYNAMIC_DRAW);
 
         for (int i = 0; i < MAX_MATERIALS; i++) {
-            glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) i * 7 * Float.BYTES, new float[]{albedosPadded[i * 3], albedosPadded[i * 3 + 1], albedosPadded[i * 3 + 2]});
-            glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) (i * 7 + 3) * Float.BYTES, new float[]{emissionColorPadded[i * 3], emissionColorPadded[i * 3 + 1], emissionColorPadded[i * 3 + 2]});
-            glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) (i * 7 + 6) * Float.BYTES, new float[]{emissionStrengthPadded[i]});
+            glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) i * 8 * Float.BYTES, new float[]{albedosPadded[i * 3], albedosPadded[i * 3 + 1], albedosPadded[i * 3 + 2]});
+            glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) (i * 8 + 4) * Float.BYTES, new float[]{emissionColorPadded[i * 3], emissionColorPadded[i * 3 + 1], emissionColorPadded[i * 3 + 2]});
+            glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) (i * 8 + 7) * Float.BYTES, new float[]{emissionStrengthPadded[i]});
         }
     }
 
