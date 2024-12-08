@@ -29,6 +29,8 @@ public class Window {
         GL.createCapabilities();
 
         glfwSetWindowAttrib(window, GLFW_RESIZABLE, GLFW_FALSE);
+
+        setVsync(false);
     }
 
     public static boolean shouldRun() {
@@ -42,6 +44,14 @@ public class Window {
     public static void update() {
         glfwPollEvents();
         glfwSwapBuffers(window);
+    }
+
+    public static void setTitle(String title) {
+        glfwSetWindowTitle(window, title);
+    }
+
+    public static void setVsync(boolean vsync) {
+        glfwSwapInterval(vsync ? 1 : 0);
     }
 
     public static void close() {
