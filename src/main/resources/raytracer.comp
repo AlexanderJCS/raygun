@@ -85,7 +85,8 @@ float random(float x) {
 }
 
 float random() {
-    return random(rand_seed + rand_counter++);
+    rand_seed = random(rand_seed);
+    return rand_seed;
 }
 
 vec3 random_vec3() {
