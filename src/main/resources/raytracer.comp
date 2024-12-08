@@ -242,7 +242,7 @@ vec3 ray_color(Ray r) {
                 r = scattered;
 
                 vec3 emittedLight = material.emissionColor * material.emissionStrength;
-                incomingLight += emittedLight;
+                incomingLight += emittedLight * color;
                 color *= clamp(material.albedo, vec3(0), vec3(1));
             } else {
                 return color;
