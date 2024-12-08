@@ -73,15 +73,11 @@ uint hash( uint x ) {
     return x;
 }
 
-float float_construct(uint m ) {
-    const uint ieee_mantissa = 0x007FFFFFu; // binary32 mantissa bitmask
-    const uint ieee_one = 0x3F800000u;      // 1.0 in IEEE binary32
-
-    m &= ieee_mantissa;                     // Keep only mantissa bits (fractional part)
-    m |= ieee_one;                          // Add fractional part to 1.0
-
-    float  f = uintBitsToFloat( m );        // Range [1:2]
-    return f - 1.0;                         // Range [0:1]
+float float_construct(uint m) {
+    m = m * 747796405 + 2891336453;
+    uint result = ((m >> ((m >> 28) + 4)) ^ m) * 277803737;
+    result = (result >> 22) ^ result;
+    return result / 4294967295.0;
 }
 
 float random(float x) {
