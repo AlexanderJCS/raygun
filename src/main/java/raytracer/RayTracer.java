@@ -56,5 +56,6 @@ public class RayTracer {
         rayTracerCompute.cleanup();
         screenTexture.cleanup();
         objectsBuffer.cleanup();
+        materialsBuffer.cleanup();
     }
 }
