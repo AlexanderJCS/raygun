@@ -35,7 +35,7 @@ public class MaterialsBuffer {
             glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) i * 12 * Float.BYTES, new float[]{albedosPadded[i * 3], albedosPadded[i * 3 + 1], albedosPadded[i * 3 + 2]});
             glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) (i * 12 + 4) * Float.BYTES, new float[]{emissionColorPadded[i * 3], emissionColorPadded[i * 3 + 1], emissionColorPadded[i * 3 + 2]});
             glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) (i * 12 + 7) * Float.BYTES, new float[]{emissionStrengthPadded[i]});
-            glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) (i * 12 + 8) * Float.BYTES, new float[]{materialTypePadded[i]});
+            glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) (i * 12 + 8) * Float.BYTES, new int[]{materialTypePadded[i]});
             glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) (i * 12 + 9) * Float.BYTES, new float[]{fuzzPadded[i]});
         }
     }
