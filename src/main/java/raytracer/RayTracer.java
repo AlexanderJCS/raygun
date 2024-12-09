@@ -1,6 +1,8 @@
 package raytracer;
 
 import org.joml.Vector3f;
+import raytracer.ssbo.MaterialsBuffer;
+import raytracer.ssbo.ObjectsBuffer;
 
 public class RayTracer {
     private final ScreenQuad screenQuad;

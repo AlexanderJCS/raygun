@@ -1,6 +1,7 @@
 #version 450
 
 #define MAX_COUNT 100
+#define MAX_TRIANGLES 1000
 
 layout(local_size_x = 8, local_size_y = 4, local_size_z = 1) in;
 layout(rgba32f, binding = 0) uniform image2D screen;
@@ -17,14 +18,16 @@ layout(std430, binding = 0) buffer MaterialsBuffer {
     Material materials[MAX_COUNT];
 };
 
-struct Sphere {
-    vec3 center;
-    float radius;
+struct Object {
+    vec3 triangles[MAX_TRIANGLES];
+    ivec3 indices[MAX_TRIANGLES];
+    int vertex_count;
+    int triangle_count;
     int material_id;
 };
 
 layout(std430, binding = 1) buffer ObjectsBuffer {
-    Sphere objects[MAX_COUNT];
+    Object objects[MAX_COUNT];
 };
 
 uniform int num_objects;
@@ -156,35 +159,59 @@ Ray camera_get_ray(Camera cam, ivec2 pixel_coords) {
     return Ray(ray_origin, ray_direction);
 }
 
-bool hit_sphere(Sphere sphere, Ray ray, float ray_tmin, float ray_tmax, inout HitRecord rec) {
-    vec3 oc = sphere.center - ray.origin;
-    float a = dot(ray.direction, ray.direction);
-    float h = dot(ray.direction, oc);
-    float c = length_squared(oc) - sphere.radius * sphere.radius;
-    float discriminant = h * h - a * c;
+bool hit_triangle(vec3 v0, vec3 v1, vec3 v2, Ray ray, float ray_tmin, float ray_tmax, inout HitRecord rec) {
+    vec3 normal = cross(v1 - v0, v2 - v0);
+    float d = -dot(normal, v0);
+    float t = -(dot(normal, ray.origin) + d) / dot(normal, ray.direction);
 
-    if (discriminant < 0) {
+    if (dot(normal, ray.direction) < 0.0001) {
+        // ray is parallel to the triangle
         return false;
     }
 
-    float sqrtd = sqrt(discriminant);
+    if (t < ray_tmin || t > ray_tmax) {
+        return false;
+    }
 
-    // Find the nearest root that lies in the acceptable range
-    float root = (h - sqrtd) / a;
-    if (root <= ray_tmin || ray_tmax <= root) {
-        root = (h + sqrtd) / a;
-        if (root <= ray_tmin || ray_tmax <= root) {
-            return false;
+    vec3 p = ray_at(ray, t);
+
+    if (dot(cross(v1 - v0, p - v0), normal) < 0) {
+        return false;
+    }
+
+    if (dot(cross(v2 - v1, p - v1), normal) < 0) {
+        return false;
+    }
+
+    if (dot(cross(v0 - v2, p - v2), normal) < 0) {
+        return false;
+    }
+
+    rec.t = t;
+    rec.p = p;
+    rec.normal = normal;
+    rec.front_face = true;
+}
+
+bool hit_object(Object object, Ray ray, float ray_tmin, float ray_tmax, inout HitRecord rec) {
+    HitRecord closest_rec;
+    bool hit_anything = false;
+    float closest_so_far = ray_tmax;
+
+    for (int i = 0; i < MAX_TRIANGLES; i++) {
+        ivec3 indices = object.indices[i];
+        vec3 v0 = object.triangles[indices.x];
+        vec3 v1 = object.triangles[indices.y];
+        vec3 v2 = object.triangles[indices.z];
+
+        if (hit_triangle(v0, v1, v2, ray, ray_tmin, closest_so_far, closest_rec)) {
+            hit_anything = true;
+            closest_so_far = closest_rec.t;
+            rec = closest_rec;
         }
     }
 
-    rec.t = root;
-    rec.p = ray_at(ray, rec.t);
-    rec.material_id = sphere.material_id;
-    vec3 outward_normal = (rec.p - sphere.center) / sphere.radius;
-    set_face_normal(ray, outward_normal, rec);
-
-    return true;
+    return hit_anything;
 }
 
 bool hit_world(Ray r, float t_min, float t_max, inout HitRecord rec) {
@@ -193,7 +220,7 @@ bool hit_world(Ray r, float t_min, float t_max, inout HitRecord rec) {
     float closest_so_far = t_max;
 
     for (int i = 0; i < num_objects; i++) {
-        if (hit_sphere(objects[i], r, t_min, closest_so_far, temp_rec)) {
+        if (hit_object(objects[i], r, t_min, closest_so_far, temp_rec)) {
             hit_anything = true;
             closest_so_far = temp_rec.t;
             rec = temp_rec;

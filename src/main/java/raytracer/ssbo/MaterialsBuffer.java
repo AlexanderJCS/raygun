@@ -1,7 +1,8 @@
-package raytracer;
+package raytracer.ssbo;
 
 import static org.lwjgl.opengl.GL43.*;
 import org.joml.Vector3f;
+import raytracer.ArrayUtil;
 
 
 public class MaterialsBuffer {
