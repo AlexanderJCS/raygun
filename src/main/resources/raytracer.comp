@@ -21,8 +21,8 @@ layout(std430, binding = 0) buffer MaterialsBuffer {
 struct Object {
     vec3 triangles[MAX_TRIANGLES];
     ivec3 indices[MAX_TRIANGLES];
-    int vertex_count;
-    int triangle_count;
+    int triangles_count;
+    int indices_count;
     int material_id;
 };
 
@@ -164,7 +164,7 @@ bool hit_triangle(vec3 v0, vec3 v1, vec3 v2, Ray ray, float ray_tmin, float ray_
     float d = -dot(normal, v0);
     float t = -(dot(normal, ray.origin) + d) / dot(normal, ray.direction);
 
-    if (dot(normal, ray.direction) < 0.0001) {
+    if (abs(dot(normal, ray.direction)) < 0.0001) {
         // ray is parallel to the triangle
         return false;
     }
@@ -191,6 +191,8 @@ bool hit_triangle(vec3 v0, vec3 v1, vec3 v2, Ray ray, float ray_tmin, float ray_
     rec.p = p;
     rec.normal = normal;
     rec.front_face = true;
+
+    return true;
 }
 
 bool hit_object(Object object, Ray ray, float ray_tmin, float ray_tmax, inout HitRecord rec) {
@@ -198,13 +200,14 @@ bool hit_object(Object object, Ray ray, float ray_tmin, float ray_tmax, inout Hi
     bool hit_anything = false;
     float closest_so_far = ray_tmax;
 
-    for (int i = 0; i < MAX_TRIANGLES; i++) {
+    for (int i = 0; i < object.indices_count; i++) {
         ivec3 indices = object.indices[i];
         vec3 v0 = object.triangles[indices.x];
         vec3 v1 = object.triangles[indices.y];
         vec3 v2 = object.triangles[indices.z];
 
         if (hit_triangle(v0, v1, v2, ray, ray_tmin, closest_so_far, closest_rec)) {
+            return true;
             hit_anything = true;
             closest_so_far = closest_rec.t;
             rec = closest_rec;

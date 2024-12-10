@@ -1,7 +1,9 @@
 package raytracer;
 
 import org.joml.Vector3f;
+import org.joml.Vector3i;
 import raytracer.ssbo.MaterialsBuffer;
+import raytracer.ssbo.Mesh;
 import raytracer.ssbo.ObjectsBuffer;
 
 public class RayTracer {
@@ -22,8 +24,9 @@ public class RayTracer {
         textureShader = new TextureShader();
         rayTracerCompute = new RayTracerCompute();
         screenTexture = new ScreenTexture(width, height);
-        objectsBuffer = new ObjectsBuffer(new Vector3f[]{new Vector3f(0, -100.5f, -1), new Vector3f(100, 160, -1), new Vector3f(0, 0, -1)}, new float[]{100f, 110f, 0.5f}, new int[]{0, 1, 0});
-        materialsBuffer = new MaterialsBuffer(new Vector3f[]{new Vector3f(1, 0.2f, 0.2f), new Vector3f(1, 1, 1)}, new Vector3f[]{new Vector3f(0, 0, 0), new Vector3f(0.7f, 0.7f, 0.9f)}, new float[]{0, 1.5f}, new int[]{1, 0}, new float[]{0.1f, 0});
+        Mesh mesh = new Mesh(new Vector3f[]{new Vector3f(0, 0, -1), new Vector3f(0, 0.5f, -1f), new Vector3f(-0.5f, 0, -1f)}, new Vector3i[]{new Vector3i(0, 1, 2)}, 0);
+        objectsBuffer = new ObjectsBuffer(new Mesh[]{mesh});
+        materialsBuffer = new MaterialsBuffer(new Vector3f[]{new Vector3f(1, 0.2f, 0.2f), new Vector3f(1, 1, 1)}, new Vector3f[]{new Vector3f(0, 0, 0), new Vector3f(0.7f, 0.7f, 0.9f)}, new float[]{0, 1.5f}, new int[]{0, 0}, new float[]{0, 0});
     }
 
     public void run() {

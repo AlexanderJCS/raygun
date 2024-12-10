@@ -5,6 +5,8 @@ import org.joml.Vector3f;
 import org.joml.Vector3i;
 import raytracer.ArrayUtil;
 
+import java.util.Arrays;
+
 
 /**
  * Uses an SSBO to store the spheres in the scene.
@@ -30,20 +32,24 @@ public class ObjectsBuffer {
 
         for (int i = 0; i < meshes.length; i++) {
             Vector3f[] verticesVec = meshes[i].vertices();
-            Vector3i indicesVec = meshes[i].indices();
+            Vector3i[] indicesVec = meshes[i].indices();
 
             for (int j = 0; j < verticesVec.length; j++) {
-                vertices[i][j * 3] = verticesVec[j].x;
-                vertices[i][j * 3 + 1] = verticesVec[j].y;
-                vertices[i][j * 3 + 2] = verticesVec[j].z;
+                vertices[i][j * 4] = verticesVec[j].x;
+                vertices[i][j * 4 + 1] = verticesVec[j].y;
+                vertices[i][j * 4 + 2] = verticesVec[j].z;
             }
 
-            for (int j = 0; j < indicesVec.length(); j++) {
-                indices[i][j] = indicesVec.get(j);
+            for (int j = 0; j < indicesVec.length; j++) {
+                indices[i][j * 4] = indicesVec[j].x;
+                indices[i][j * 4 + 1] = indicesVec[j].y;
+                indices[i][j * 4 + 2] = indicesVec[j].z;
             }
 
             materialIDs[i] = meshes[i].materialIndex();
         }
+
+        System.out.println(Arrays.deepToString(indices));
 
         ssbo = glGenBuffers();
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
@@ -51,13 +57,13 @@ public class ObjectsBuffer {
 
         int objectOffset = 4 * MAX_TRIANGLES * Float.BYTES + (4 * MAX_TRIANGLES + 3) * Integer.BYTES;
 
-        for (int i = 0; i < MAX_OBJECT; i++) {
+        for (int i = 0; i < meshes.length; i++) {
             // upload in the order of centers, radii, materialIDs as a densely packed array
-
-            // all this commented out code is garbage
-//            glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) i * 4 * MAX_TRIANGLES * Float.BYTES, vertices[i]);
-//            glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) (i * 4 * MAX_TRIANGLES + 3) * Float.BYTES, new int[]{materialIDs[i]});
-//            glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) (4 * MAX_TRIANGLES * MAX_OBJECT + i * 4 * MAX_TRIANGLES) * Integer.BYTES, indices[i]);
+            glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) i * objectOffset, vertices[i]);
+            glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) i * objectOffset + 4 * MAX_TRIANGLES * Float.BYTES, indices[i]);
+            glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) i * objectOffset + 4 * MAX_TRIANGLES * Float.BYTES + (4 * MAX_TRIANGLES) * Integer.BYTES, new int[]{meshes[i].vertices().length});
+            glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) i * objectOffset + 4 * MAX_TRIANGLES * Float.BYTES + (4 * MAX_TRIANGLES + 1) * Integer.BYTES, new int[]{meshes[i].indices().length});
+            glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) i * objectOffset + 4 * MAX_TRIANGLES * Float.BYTES + (4 * MAX_TRIANGLES + 2) * Integer.BYTES, new int[]{materialIDs[i]});
         }
     }
 
