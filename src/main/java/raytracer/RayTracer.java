@@ -51,7 +51,7 @@ public class RayTracer {
             Window.clear();
             clock.update();
 
-            Window.setTitle("Ray Tracer | FPS: " + Math.round(clock.getUnsmoothedFps()));
+            Window.setTitle("Ray Tracer | FPS: " + Math.round(clock.getSmoothedFps()));
         }
     }
 
