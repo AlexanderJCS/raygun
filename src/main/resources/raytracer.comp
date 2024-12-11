@@ -226,11 +226,11 @@ bool hit_object(int object_index, Ray ray, float ray_tmin, float ray_tmax, inout
     bool hit_anything = false;
     float closest_so_far = ray_tmax;
 
-    for (int i = 0; i < objects[i].indices_count; i++) {
-        ivec3 indices = objects[i].indices[i];
-        vec3 v0 = objects[i].triangles[indices.x];
-        vec3 v1 = objects[i].triangles[indices.y];
-        vec3 v2 = objects[i].triangles[indices.z];
+    for (int i = 0; i < objects[object_index].indices_count; i++) {
+        ivec3 indices = objects[object_index].indices[i];
+        vec3 v0 = objects[object_index].triangles[indices.x];
+        vec3 v1 = objects[object_index].triangles[indices.y];
+        vec3 v2 = objects[object_index].triangles[indices.z];
 
         if (hit_triangle(v0, v1, v2, ray, ray_tmin, closest_so_far, closest_rec)) {
             hit_anything = true;
