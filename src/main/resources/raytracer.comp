@@ -221,19 +221,18 @@ bool hit_triangle(vec3 v0, vec3 v1, vec3 v2, Ray ray, float ray_tmin, float ray_
     return true;
 }
 
-bool hit_object(Object object, Ray ray, float ray_tmin, float ray_tmax, inout HitRecord rec) {
+bool hit_object(int object_index, Ray ray, float ray_tmin, float ray_tmax, inout HitRecord rec) {
     HitRecord closest_rec;
     bool hit_anything = false;
     float closest_so_far = ray_tmax;
 
-    for (int i = 0; i < object.indices_count; i++) {
-        ivec3 indices = object.indices[i];
-        vec3 v0 = object.triangles[indices.x];
-        vec3 v1 = object.triangles[indices.y];
-        vec3 v2 = object.triangles[indices.z];
+    for (int i = 0; i < objects[i].indices_count; i++) {
+        ivec3 indices = objects[i].indices[i];
+        vec3 v0 = objects[i].triangles[indices.x];
+        vec3 v1 = objects[i].triangles[indices.y];
+        vec3 v2 = objects[i].triangles[indices.z];
 
         if (hit_triangle(v0, v1, v2, ray, ray_tmin, closest_so_far, closest_rec)) {
-            return true;  // todo: remove debug return
             hit_anything = true;
             closest_so_far = closest_rec.t;
             rec = closest_rec;
@@ -249,8 +248,7 @@ bool hit_world(Ray r, float t_min, float t_max, inout HitRecord rec) {
     float closest_so_far = t_max;
 
     for (int i = 0; i < num_objects; i++) {
-        if (hit_object(objects[i], r, t_min, closest_so_far, temp_rec)) {
-            return true;  // todo: remove debug return
+        if (hit_object(i, r, t_min, closest_so_far, temp_rec)) {
             hit_anything = true;
             closest_so_far = temp_rec.t;
             rec = temp_rec;
@@ -289,8 +287,6 @@ vec3 ray_color(Ray r) {
     for (int i = 0; i < 10; i++) {
         HitRecord rec;
         if (hit_world(r, 0.001, 1000.0, rec)) {
-            return vec3(1, 0, 0);  // todo: remove debug return
-
             Ray scattered;
             Material material = materials[rec.material_id];
 
