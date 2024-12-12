@@ -24,26 +24,13 @@ public class RayTracer {
         textureShader = new TextureShader();
         rayTracerCompute = new RayTracerCompute();
         screenTexture = new ScreenTexture(width, height);
-        Mesh mesh = new Mesh(
-                new Vector3f[]{
-                        new Vector3f(0, 0, -1.25f),
-                        new Vector3f(0, 0.5f, -1f),
-                        new Vector3f(-0.5f, 0, -1.25f),
-                        new Vector3f(-0.5f, 0.5f, -1)
-                },
-                new Vector3i[]{
-                        new Vector3i(0, 1, 2),
-                        new Vector3i(1, 3, 2)
-                },
-                1
-        );
 
-        Mesh floor = new Mesh(
+        Mesh cornellFloor = new Mesh(
                 new Vector3f[]{
-                        new Vector3f(-10, -1, -10),
-                        new Vector3f(-10, -1, 10),
-                        new Vector3f(10, -1, 10),
-                        new Vector3f(10, -1, -10)
+                        new Vector3f(-1, -1, -1),
+                        new Vector3f(1, -1, -1),
+                        new Vector3f(1, -1, -3),
+                        new Vector3f(-1, -1, -3)
                 },
                 new Vector3i[]{
                         new Vector3i(0, 1, 2),
@@ -52,8 +39,92 @@ public class RayTracer {
                 0
         );
 
-        objectsBuffer = new ObjectsBuffer(new Mesh[]{floor, mesh});
-        materialsBuffer = new MaterialsBuffer(new Vector3f[]{new Vector3f(1, 0.2f, 0.2f), new Vector3f(1, 1, 1)}, new Vector3f[]{new Vector3f(0, 0, 0), new Vector3f(0.7f, 0.7f, 0.9f)}, new float[]{0, 100f}, new int[]{0, 0}, new float[]{0, 0});
+        Mesh cornellCeiling = new Mesh(
+                new Vector3f[]{
+                        new Vector3f(-1, 1, -1),
+                        new Vector3f(1, 1, -1),
+                        new Vector3f(1, 1, -3),
+                        new Vector3f(-1, 1, -3)
+                },
+                new Vector3i[]{
+                        new Vector3i(0, 2, 1),
+                        new Vector3i(0, 3, 2)
+                },
+                0
+        );
+
+        Mesh cornellBackWall = new Mesh(
+                new Vector3f[]{
+                        new Vector3f(-1, -1, -3),
+                        new Vector3f(1, -1, -3),
+                        new Vector3f(1, 1, -3),
+                        new Vector3f(-1, 1, -3)
+                },
+                new Vector3i[]{
+                        new Vector3i(0, 1, 2),
+                        new Vector3i(0, 2, 3)
+                },
+                0
+        );
+
+        Mesh cornellLeftWall = new Mesh(
+                new Vector3f[]{
+                        new Vector3f(-1, -1, -1),
+                        new Vector3f(-1, -1, -3),
+                        new Vector3f(-1, 1, -3),
+                        new Vector3f(-1, 1, -1)
+                },
+                new Vector3i[]{
+                        new Vector3i(0, 1, 2),
+                        new Vector3i(0, 2, 3)
+                },
+                0
+        );
+
+        Mesh cornellRightWall = new Mesh(
+                new Vector3f[]{
+                        new Vector3f(1, -1, -1),
+                        new Vector3f(1, -1, -3),
+                        new Vector3f(1, 1, -3),
+                        new Vector3f(1, 1, -1)
+                },
+                new Vector3i[]{
+                        new Vector3i(0, 2, 1),
+                        new Vector3i(0, 3, 2)
+                },
+                0
+        );
+
+        Mesh cornellFrontWall = new Mesh(
+                new Vector3f[]{
+                        new Vector3f(-1, -1, -1),
+                        new Vector3f(1, -1, -1),
+                        new Vector3f(1, 1, -1),
+                        new Vector3f(-1, 1, -1)
+                },
+                new Vector3i[]{
+                        new Vector3i(0, 2, 1),
+                        new Vector3i(0, 3, 2)
+                },
+                0
+        );
+
+        Mesh cornellLight = new Mesh(
+                new Vector3f[]{
+                        new Vector3f(-0.15f, 0.999f, -1.5f),
+                        new Vector3f(0.15f, 0.999f, -1.5f),
+                        new Vector3f(0.15f, 0.999f, -2.5f),
+                        new Vector3f(-0.15f, 0.999f, -2.5f)
+                },
+                new Vector3i[]{
+                        new Vector3i(0, 1, 2),
+                        new Vector3i(0, 2, 3)
+                },
+                1
+        );
+
+        objectsBuffer = new ObjectsBuffer(new Mesh[]{cornellFloor, cornellCeiling, cornellBackWall, cornellLeftWall, cornellRightWall, cornellFrontWall, cornellLight});
+        materialsBuffer = new MaterialsBuffer(new Vector3f[]{new Vector3f(0.76f, 0.76f, 0.8f), new Vector3f(1, 1, 1)}, new Vector3f[]{new Vector3f(0, 0, 0), new Vector3f(0.7f, 0.7f, 0.9f)}, new float[]{0, 30f}, new int[]{1, 0}, new float[]{1f, 0});
     }
 
     public void run() {
