@@ -60,7 +60,8 @@ struct Camera {
     vec3 pixel_delta_u, pixel_delta_v;
 };
 
-float rand_seed = dot(gl_GlobalInvocationID.xy, gl_GlobalInvocationID.xy) + frame_counter * gl_GlobalInvocationID.y;
+uniform float rand0to1;
+float rand_seed = dot(gl_GlobalInvocationID.xyz, gl_GlobalInvocationID.xyz) + rand0to1 * frame_counter * gl_GlobalInvocationID.y;
 int rand_counter = 0;
 
 float length_squared(vec3 v) {
@@ -89,7 +90,8 @@ float random(float x) {
 }
 
 float random() {
-    rand_seed = random(rand_seed);
+    rand_counter++;
+    rand_seed = random(rand_seed * rand_counter);
     return rand_seed;
 }
 
@@ -340,7 +342,6 @@ vec3 ray_color(Ray r) {
 
 
 vec3 render(Camera cam, ivec2 pixel_coords) {
-    // 10 is max depth
     Ray r = camera_get_ray(cam, pixel_coords);
     return ray_color(r);
 }
