@@ -24,9 +24,36 @@ public class RayTracer {
         textureShader = new TextureShader();
         rayTracerCompute = new RayTracerCompute();
         screenTexture = new ScreenTexture(width, height);
-        Mesh mesh = new Mesh(new Vector3f[]{new Vector3f(0, 0, -1), new Vector3f(0, 0.5f, -1f), new Vector3f(-0.5f, 0, -1f), new Vector3f(-0.5f, 0.5f, -1)}, new Vector3i[]{new Vector3i(1, 2, 3), new Vector3i(0, 1, 2)}, 0);
-        objectsBuffer = new ObjectsBuffer(new Mesh[]{mesh});
-        materialsBuffer = new MaterialsBuffer(new Vector3f[]{new Vector3f(1, 0.2f, 0.2f), new Vector3f(1, 1, 1)}, new Vector3f[]{new Vector3f(0, 0, 0), new Vector3f(0.7f, 0.7f, 0.9f)}, new float[]{0, 1.5f}, new int[]{0, 0}, new float[]{0, 0});
+        Mesh mesh = new Mesh(
+                new Vector3f[]{
+                        new Vector3f(0, 0, -1.25f),
+                        new Vector3f(0, 0.5f, -1f),
+                        new Vector3f(-0.5f, 0, -1.25f),
+                        new Vector3f(-0.5f, 0.5f, -1)
+                },
+                new Vector3i[]{
+                        new Vector3i(0, 1, 2),
+                        new Vector3i(1, 3, 2)
+                },
+                1
+        );
+
+        Mesh floor = new Mesh(
+                new Vector3f[]{
+                        new Vector3f(-10, -1, -10),
+                        new Vector3f(-10, -1, 10),
+                        new Vector3f(10, -1, 10),
+                        new Vector3f(10, -1, -10)
+                },
+                new Vector3i[]{
+                        new Vector3i(0, 1, 2),
+                        new Vector3i(0, 2, 3)
+                },
+                0
+        );
+
+        objectsBuffer = new ObjectsBuffer(new Mesh[]{floor, mesh});
+        materialsBuffer = new MaterialsBuffer(new Vector3f[]{new Vector3f(1, 0.2f, 0.2f), new Vector3f(1, 1, 1)}, new Vector3f[]{new Vector3f(0, 0, 0), new Vector3f(0.7f, 0.7f, 0.9f)}, new float[]{0, 0.8f}, new int[]{0, 0}, new float[]{0, 0});
     }
 
     public void run() {
