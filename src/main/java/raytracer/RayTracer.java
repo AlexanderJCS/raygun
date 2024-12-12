@@ -124,7 +124,7 @@ public class RayTracer {
         );
 
         objectsBuffer = new ObjectsBuffer(new Mesh[]{cornellFloor, cornellCeiling, cornellBackWall, cornellLeftWall, cornellRightWall, cornellFrontWall, cornellLight});
-        materialsBuffer = new MaterialsBuffer(new Vector3f[]{new Vector3f(0.76f, 0.76f, 0.8f), new Vector3f(1, 1, 1)}, new Vector3f[]{new Vector3f(0, 0, 0), new Vector3f(0.7f, 0.7f, 0.9f)}, new float[]{0, 30f}, new int[]{1, 0}, new float[]{1f, 0});
+        materialsBuffer = new MaterialsBuffer(new Vector3f[]{new Vector3f(0.76f, 0.76f, 0.8f), new Vector3f(1, 1, 1)}, new Vector3f[]{new Vector3f(0, 0, 0), new Vector3f(0.7f, 0.7f, 0.9f)}, new float[]{0, 5f}, new int[]{0, 0}, new float[]{0, 0});
     }
 
     public void run() {
