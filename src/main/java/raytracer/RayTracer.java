@@ -27,10 +27,10 @@ public class RayTracer {
 
         Mesh cornellFloor = new Mesh(
                 new Vector3f[]{
-                        new Vector3f(-1, -1, -1),
-                        new Vector3f(1, -1, -1),
-                        new Vector3f(1, -1, -3),
-                        new Vector3f(-1, -1, -3)
+                        new Vector3f(-2, -0.99f, -0),
+                        new Vector3f(2, -0.99f, -0),
+                        new Vector3f(2, -0.99f, -4),
+                        new Vector3f(-2, -0.99f, -4)
                 },
                 new Vector3i[]{
                         new Vector3i(0, 1, 2),
@@ -41,10 +41,10 @@ public class RayTracer {
 
         Mesh cornellCeiling = new Mesh(
                 new Vector3f[]{
-                        new Vector3f(-1, 1, -1),
-                        new Vector3f(1, 1, -1),
-                        new Vector3f(1, 1, -3),
-                        new Vector3f(-1, 1, -3)
+                        new Vector3f(-1, 0.99f, -1),
+                        new Vector3f(1, 0.99f, -1),
+                        new Vector3f(1, 0.99f, -3),
+                        new Vector3f(-1, 0.99f, -3)
                 },
                 new Vector3i[]{
                         new Vector3i(0, 2, 1),
@@ -55,10 +55,10 @@ public class RayTracer {
 
         Mesh cornellBackWall = new Mesh(
                 new Vector3f[]{
-                        new Vector3f(-1, -1, -3),
-                        new Vector3f(1, -1, -3),
-                        new Vector3f(1, 1, -3),
-                        new Vector3f(-1, 1, -3)
+                        new Vector3f(-1, -1, -2.999f),
+                        new Vector3f(1, -1, -2.999f),
+                        new Vector3f(1, 1, -2.999f),
+                        new Vector3f(-1, 1, -2.999f)
                 },
                 new Vector3i[]{
                         new Vector3i(0, 1, 2),
@@ -69,10 +69,10 @@ public class RayTracer {
 
         Mesh cornellLeftWall = new Mesh(
                 new Vector3f[]{
-                        new Vector3f(-1, -1, -1),
-                        new Vector3f(-1, -1, -3),
-                        new Vector3f(-1, 1, -3),
-                        new Vector3f(-1, 1, -1)
+                        new Vector3f(-0.999f, -2, -1),
+                        new Vector3f(-0.999f, -2, -3),
+                        new Vector3f(-0.999f, 2, -3),
+                        new Vector3f(-0.999f, 2, -1)
                 },
                 new Vector3i[]{
                         new Vector3i(0, 1, 2),
@@ -83,10 +83,10 @@ public class RayTracer {
 
         Mesh cornellRightWall = new Mesh(
                 new Vector3f[]{
-                        new Vector3f(1, -1, -1),
-                        new Vector3f(1, -1, -3),
-                        new Vector3f(1, 1, -3),
-                        new Vector3f(1, 1, -1)
+                        new Vector3f(0.999f, -1, -1),
+                        new Vector3f(0.999f, -1, -3),
+                        new Vector3f(0.999f, 1, -3),
+                        new Vector3f(0.999f, 1, -1)
                 },
                 new Vector3i[]{
                         new Vector3i(0, 2, 1),
@@ -97,10 +97,10 @@ public class RayTracer {
 
         Mesh cornellFrontWall = new Mesh(
                 new Vector3f[]{
-                        new Vector3f(-1, -1, -1),
-                        new Vector3f(1, -1, -1),
-                        new Vector3f(1, 1, -1),
-                        new Vector3f(-1, 1, -1)
+                        new Vector3f(-1, -1, -1.001f),
+                        new Vector3f(1, -1, -1.001f),
+                        new Vector3f(1, 1, -1.001f),
+                        new Vector3f(-1, 1, -1.001f)
                 },
                 new Vector3i[]{
                         new Vector3i(0, 2, 1),
@@ -111,10 +111,10 @@ public class RayTracer {
 
         Mesh cornellLight = new Mesh(
                 new Vector3f[]{
-                        new Vector3f(-0.15f, 0.999f, -1.5f),
-                        new Vector3f(0.15f, 0.999f, -1.5f),
-                        new Vector3f(0.15f, 0.999f, -2.5f),
-                        new Vector3f(-0.15f, 0.999f, -2.5f)
+                        new Vector3f(-0.15f, 0.989f, -1.5f),
+                        new Vector3f(0.15f, 0.989f, -1.5f),
+                        new Vector3f(0.15f, 0.989f, -2.5f),
+                        new Vector3f(-0.15f, 0.989f, -2.5f)
                 },
                 new Vector3i[]{
                         new Vector3i(0, 1, 2),
