@@ -6,6 +6,8 @@ import raytracer.ssbo.MaterialsBuffer;
 import raytracer.ssbo.Mesh;
 import raytracer.ssbo.ObjectsBuffer;
 
+import java.io.IOException;
+
 public class RayTracer {
     private final ScreenQuad screenQuad;
     private final TextureShader textureShader;
@@ -123,7 +125,17 @@ public class RayTracer {
                 1
         );
 
-        objectsBuffer = new ObjectsBuffer(new Mesh[]{cornellFloor, cornellCeiling, cornellBackWall, cornellLeftWall, cornellRightWall, cornellFrontWall, cornellLight});
+        try {
+            Mesh mesh = Mesh.load("src/main/resources/suzanne.obj", 0);
+            mesh.transform(new Vector3f(0, 0, -3), new Vector3f(0, 0, 0), new Vector3f(0.5f, 0.5f, 0.5f));
+
+            System.out.println(mesh.vertices().length + " " + mesh.indices().length);
+
+            objectsBuffer = new ObjectsBuffer(new Mesh[]{mesh});
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load mesh", e);
+        }
+
         materialsBuffer = new MaterialsBuffer(new Vector3f[]{new Vector3f(0.76f, 0.76f, 0.8f), new Vector3f(1, 1, 1)}, new Vector3f[]{new Vector3f(0, 0, 0), new Vector3f(0.7f, 0.7f, 0.9f)}, new float[]{0, 5f}, new int[]{0, 0}, new float[]{0, 0});
     }
 

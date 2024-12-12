@@ -23,8 +23,8 @@ public class ObjectsBuffer {
 
         this.numObjects = meshes.length;
 
-        float[][] vertices = new float[MAX_OBJECT][MAX_TRIANGLES];
-        int[][] indices = new int[MAX_OBJECT][MAX_TRIANGLES];
+        float[][] vertices = new float[MAX_OBJECT][MAX_TRIANGLES * 4];
+        int[][] indices = new int[MAX_OBJECT][MAX_TRIANGLES * 4];
         int[] materialIDs = new int[MAX_OBJECT];
 
         for (int i = 0; i < meshes.length; i++) {
