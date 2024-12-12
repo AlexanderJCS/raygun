@@ -53,7 +53,7 @@ public class RayTracer {
         );
 
         objectsBuffer = new ObjectsBuffer(new Mesh[]{floor, mesh});
-        materialsBuffer = new MaterialsBuffer(new Vector3f[]{new Vector3f(1, 0.2f, 0.2f), new Vector3f(1, 1, 1)}, new Vector3f[]{new Vector3f(0, 0, 0), new Vector3f(0.7f, 0.7f, 0.9f)}, new float[]{0, 0.8f}, new int[]{0, 0}, new float[]{0, 0});
+        materialsBuffer = new MaterialsBuffer(new Vector3f[]{new Vector3f(1, 0.2f, 0.2f), new Vector3f(1, 1, 1)}, new Vector3f[]{new Vector3f(0, 0, 0), new Vector3f(0.7f, 0.7f, 0.9f)}, new float[]{0, 100f}, new int[]{0, 0}, new float[]{0, 0});
     }
 
     public void run() {
