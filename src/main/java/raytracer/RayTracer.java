@@ -129,8 +129,6 @@ public class RayTracer {
             Mesh mesh = Mesh.load("src/main/resources/suzanne.obj", 0);
             mesh.transform(new Vector3f(0, 0, -3), new Vector3f(0, 0, 0), new Vector3f(0.5f, 0.5f, 0.5f));
 
-            System.out.println(mesh.vertices().length + " " + mesh.indices().length);
-
             objectsBuffer = new ObjectsBuffer(new Mesh[]{mesh});
         } catch (IOException e) {
             throw new RuntimeException("Failed to load mesh", e);
