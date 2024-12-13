@@ -126,15 +126,28 @@ public class RayTracer {
         );
 
         try {
-            Mesh mesh = Mesh.load("src/main/resources/suzanne.obj", 0);
+            Mesh mesh = Mesh.load("src/main/resources/suzanne.obj", 2);
             mesh.transform(new Vector3f(0, 0, -3), new Vector3f(0, 0, 0), new Vector3f(0.5f, 0.5f, 0.5f));
 
-            objectsBuffer = new ObjectsBuffer(new Mesh[]{mesh});
+            objectsBuffer = new ObjectsBuffer(new Mesh[]{cornellFloor, cornellCeiling, cornellBackWall, cornellLeftWall, cornellRightWall, cornellFrontWall, mesh, cornellLight});
         } catch (IOException e) {
             throw new RuntimeException("Failed to load mesh", e);
         }
 
-        materialsBuffer = new MaterialsBuffer(new Vector3f[]{new Vector3f(0.76f, 0.76f, 0.8f), new Vector3f(1, 1, 1)}, new Vector3f[]{new Vector3f(0, 0, 0), new Vector3f(0.7f, 0.7f, 0.9f)}, new float[]{0, 5f}, new int[]{0, 0}, new float[]{0, 0});
+        materialsBuffer = new MaterialsBuffer(
+                new Vector3f[]{
+                        new Vector3f(0.8f),
+                        new Vector3f(1, 1, 1),
+                        new Vector3f(0.9f)
+                },
+                new Vector3f[]{
+                        new Vector3f(0, 0, 0),
+                        new Vector3f(0.7f, 0.7f, 0.9f),
+                        new Vector3f(0.9f, 0.1f, 0.1f)
+                },
+                new float[]{0, 0.5f, 0.4f},
+                new int[]{1, 0, 0},
+                new float[]{0.001f, 0});
     }
 
     public void run() {
