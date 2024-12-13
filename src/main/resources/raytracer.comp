@@ -11,7 +11,7 @@ struct Material {
     vec3 emissionColor;
     float emissionStrength;
     int type;  // 0 = diffuse, 1 = metal, 2 = glass
-    float fuzz;  // for metal
+    float fuzzOrRefractionIdx;  // for metal
 };
 
 layout(std430, binding = 0) buffer MaterialsBuffer {
@@ -246,6 +246,7 @@ bool hit_triangle(vec3 v0, vec3 v1, vec3 v2, Ray ray, float ray_tmin, float ray_
     rec.p = ray_at(ray, t);
     rec.material_id = material_id;
     rec.normal = normalize(cross(edge1, edge2));
+    set_face_normal(ray, rec.normal, rec);
 
     return true;
 }
@@ -288,21 +289,49 @@ bool hit_world(Ray r, float t_min, float t_max, inout HitRecord rec) {
 }
 
 
+double reflectance(float cosine, float ref_idx) {
+    // Use Schlick's approximation for reflectance
+    float r0 = (1 - ref_idx) / (1 + ref_idx);
+    r0 = r0 * r0;
+    return r0 + (1 - r0) * pow((1 - cosine), 5);
+}
+
+
 bool material_scatter(int material_id, Ray r_in, HitRecord rec, inout Ray scattered) {
     Material material = materials[material_id];
     if (material.type == 0) {
+        // diffuse
         scattered.origin = rec.p;
         scattered.direction = rec.normal + random_unit_vec();
 
         return true;
     } else if (material.type == 1) {
+        // metal
         vec3 reflected = normalize(reflect(r_in.direction, rec.normal));
-        reflected += material.fuzz * random_unit_vec();
+        reflected += material.fuzzOrRefractionIdx * random_unit_vec();
 
         scattered.origin = rec.p;
         scattered.direction = reflected;
 
         return dot(scattered.direction, rec.normal) > 0;
+    } else if (material.type == 2) {
+        // glass
+        float ri = rec.front_face ? 1.0 / material.fuzzOrRefractionIdx : material.fuzzOrRefractionIdx;
+        vec3 unit_direction = normalize(r_in.direction);
+        float cos_theta = min(dot(-unit_direction, rec.normal), 1.0);
+        float sin_theta = sqrt(1.0 - cos_theta * cos_theta);
+
+        bool cannot_refract = ri * sin_theta > 1.0;
+        vec3 direction;
+
+        if (cannot_refract || reflectance(cos_theta, ri) > random()) {
+            direction = reflect(unit_direction, rec.normal);
+        } else {
+            direction = refract(unit_direction, rec.normal, ri);
+        }
+
+        scattered.origin = rec.p;
+        scattered.direction = direction;
     }
 
     return false;
