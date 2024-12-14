@@ -186,9 +186,9 @@ Ray camera_get_ray(Camera cam, ivec2 pixel_coords) {
 }
 
 bool hit_bounding_box(vec3 aabb_min, vec3 aabb_max, Ray ray) {
-    vec3 invD = 1.0 / ray.direction;
-    vec3 t0 = (aabb_min - ray.origin) * invD;
-    vec3 t1 = (aabb_max - ray.origin) * invD;
+    vec3 inv_d = 1.0 / ray.direction;
+    vec3 t0 = (aabb_min - ray.origin) * inv_d;
+    vec3 t1 = (aabb_max - ray.origin) * inv_d;
 
     vec3 tmin = min(t0, t1);
     vec3 tmax = max(t0, t1);
