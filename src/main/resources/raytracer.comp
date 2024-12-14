@@ -201,11 +201,11 @@ bool hit_bounding_box(vec3 aabb_min, vec3 aabb_max, Ray ray) {
     return t_enter <= t_exit;
 }
 
-
-// implements the Möller–Trumbore intersection algorithm
+/**
+ * Implements the Möller–Trumbore intersection algorithm. Assumes vertices are counterclockwise and the ray.direction
+ * vector is normalized.
+ */
 bool hit_triangle(vec3 v0, vec3 v1, vec3 v2, Ray ray, float ray_tmin, float ray_tmax, int material_id, inout HitRecord rec) {
-    ray.direction = normalize(ray.direction);
-
     vec3 bounding_box_min = min(min(v0, v1), v2);
     vec3 bounding_box_max = max(max(v0, v1), v2);
 
@@ -253,6 +253,10 @@ bool hit_triangle(vec3 v0, vec3 v1, vec3 v2, Ray ray, float ray_tmin, float ray_
     return true;
 }
 
+/**
+ * Returns true if the ray hits the object, and updates the HitRecord with the hit information. Assumes ray.direction is
+ * normalized.
+ */
 bool hit_object(int object_index, Ray ray, float ray_tmin, float ray_tmax, inout HitRecord rec) {
     if (!hit_bounding_box(objects[object_index].min_bounds, objects[object_index].max_bounds, ray)) {
         return false;
@@ -282,6 +286,9 @@ bool hit_world(Ray r, float t_min, float t_max, inout HitRecord rec) {
     HitRecord temp_rec;
     bool hit_anything = false;
     float closest_so_far = t_max;
+
+    // normalize here and assume that it's normalized downstream, for performance
+    r.direction = normalize(r.direction);
 
     for (int i = 0; i < num_objects; i++) {
         if (hit_object(i, r, t_min, closest_so_far, temp_rec)) {
