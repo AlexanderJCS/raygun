@@ -3,6 +3,7 @@ package raytracer.ssbo;
 import static org.lwjgl.opengl.GL45.*;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
+import raytracer.ArrayUtil;
 
 
 /**
@@ -46,11 +47,12 @@ public class ObjectsBuffer {
             materialIDs[i] = meshes[i].materialIndex();
         }
 
+        int stride = (4 * MAX_TRIANGLES + 4 + 4) * Float.BYTES + (4 * MAX_TRIANGLES + 3) * Integer.BYTES + Integer.BYTES;
+
         ssbo = glGenBuffers();
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
-        glBufferData(GL_SHADER_STORAGE_BUFFER, (long) (4 * MAX_TRIANGLES * MAX_OBJECT) * Float.BYTES + (long) ((4 * MAX_TRIANGLES + 3) * MAX_OBJECT) * Integer.BYTES, GL_DYNAMIC_DRAW);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, (long) stride * MAX_OBJECT * Integer.BYTES, GL_DYNAMIC_DRAW);
 
-        int stride = 4 * MAX_TRIANGLES * Float.BYTES + (4 * MAX_TRIANGLES + 3) * Integer.BYTES + Integer.BYTES;
 
         for (int i = 0; i < meshes.length; i++) {
             // upload in the order of centers, radii, materialIDs as a densely packed array
@@ -59,6 +61,8 @@ public class ObjectsBuffer {
             glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) i * stride + 4 * MAX_TRIANGLES * Float.BYTES + (4 * MAX_TRIANGLES) * Integer.BYTES, new int[]{meshes[i].vertices().length});
             glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) i * stride + 4 * MAX_TRIANGLES * Float.BYTES + (4 * MAX_TRIANGLES + 1) * Integer.BYTES, new int[]{meshes[i].indices().length});
             glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) i * stride + 4 * MAX_TRIANGLES * Float.BYTES + (4 * MAX_TRIANGLES + 2) * Integer.BYTES, new int[]{materialIDs[i]});
+            glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) i * stride + 4 * MAX_TRIANGLES * Float.BYTES + (4 * MAX_TRIANGLES + 4) * Integer.BYTES, ArrayUtil.toVec4FloatArray(meshes[i].minBounds()));
+            glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) i * stride + (4 * MAX_TRIANGLES + 4) * Float.BYTES + (4 * MAX_TRIANGLES + 4) * Integer.BYTES, ArrayUtil.toVec4FloatArray(meshes[i].maxBounds()));
         }
     }
 

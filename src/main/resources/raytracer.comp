@@ -19,11 +19,13 @@ layout(std430, binding = 0) buffer MaterialsBuffer {
 };
 
 struct Object {
-    vec3 triangles[MAX_TRIANGLES];
+    vec3 vertices[MAX_TRIANGLES];
     ivec3 indices[MAX_TRIANGLES];
-    int triangles_count;
+    int vertices_count;
     int indices_count;
     int material_id;
+    vec3 min_bounds;
+    vec3 max_bounds;
 };
 
 layout(std430, binding = 1) buffer ObjectsBuffer {
@@ -252,15 +254,19 @@ bool hit_triangle(vec3 v0, vec3 v1, vec3 v2, Ray ray, float ray_tmin, float ray_
 }
 
 bool hit_object(int object_index, Ray ray, float ray_tmin, float ray_tmax, inout HitRecord rec) {
+    if (!hit_bounding_box(objects[object_index].min_bounds, objects[object_index].max_bounds, ray)) {
+        return false;
+    }
+
     HitRecord closest_rec;
     bool hit_anything = false;
     float closest_so_far = ray_tmax;
 
     for (int i = 0; i < objects[object_index].indices_count; i++) {
         ivec3 indices = objects[object_index].indices[i];
-        vec3 v0 = objects[object_index].triangles[indices.x];
-        vec3 v1 = objects[object_index].triangles[indices.y];
-        vec3 v2 = objects[object_index].triangles[indices.z];
+        vec3 v0 = objects[object_index].vertices[indices.x];
+        vec3 v1 = objects[object_index].vertices[indices.y];
+        vec3 v2 = objects[object_index].vertices[indices.z];
 
         if (hit_triangle(v0, v1, v2, ray, ray_tmin, closest_so_far, objects[object_index].material_id, closest_rec)) {
             hit_anything = true;
@@ -364,12 +370,13 @@ vec3 ray_color(Ray r) {
             }
 
             // russian roulette termination
-            float p = max(color.r, max(color.g, color.b));
-            if (random() > p) {
-                break;
-            }
-
-            color /= p;
+            // currently commented out because the extra perf gain doesn't seem to be worth the extra noise
+//            float p = max(color.r, max(color.g, color.b));
+//            if (random() > p) {
+//                break;
+//            }
+//
+//            color /= p;
         } else {
             // If the ray misses, add the background contribution
 //            vec3 unit_direction = normalize(r.direction);

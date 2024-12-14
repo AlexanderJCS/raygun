@@ -64,6 +64,22 @@ public record Mesh(Vector3f[] vertices, Vector3i[] indices, int materialIndex) {
         }
     }
 
+    public Vector3f[] minBounds() {
+        Vector3f min = new Vector3f(Float.POSITIVE_INFINITY);
+        for (Vector3f vertex : vertices) {
+            min.min(vertex);
+        }
+        return new Vector3f[]{min};
+    }
+
+    public Vector3f[] maxBounds() {
+        Vector3f max = new Vector3f(Float.NEGATIVE_INFINITY);
+        for (Vector3f vertex : vertices) {
+            max.max(vertex);
+        }
+        return new Vector3f[]{max};
+    }
+
     public String toString() {
         return "Mesh{vertices=" + Arrays.toString(vertices) + ", indices=" + Arrays.toString(indices) + ", materialIndex=" + materialIndex + "}";
     }

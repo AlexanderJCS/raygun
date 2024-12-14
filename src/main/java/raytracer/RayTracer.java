@@ -146,7 +146,7 @@ public class RayTracer {
                         new Vector3f(0.9f, 0.1f, 0.1f)
                 },
                 new float[]{0, 4f, 0},
-                new int[]{0, 0, 1},
+                new int[]{0, 0, 2},
                 new float[]{0.001f, 0, 0.025f});
     }
 
