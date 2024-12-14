@@ -172,7 +172,7 @@ public class RayTracer {
             Window.clear();
             clock.update();
 
-            Window.setTitle("Ray Tracer | FPS: " + Math.round(clock.getSmoothedFps()));
+            Window.setTitle("Ray Tracer | FPS: " + Math.round(clock.getSmoothedFps()) + " | Frame Time: " + (Math.round(1 / clock.getSmoothedFps() * 10000) / 10f) + "ms");
         }
     }
 
