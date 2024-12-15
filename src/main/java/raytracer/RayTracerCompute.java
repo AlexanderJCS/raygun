@@ -29,13 +29,13 @@ public class RayTracerCompute {
         glDeleteShader(computeShader);
     }
 
-    public void compute(int width, int height, int numObjects, int numMaterials, int frameCounter) {
+    public void compute(int width, int height, int numObjects, int frameCounter, int maxBounces) {
         glUseProgram(program);
 
         // set uniforms
         glUniform1i(glGetUniformLocation(program, "num_objects"), numObjects);
-        glUniform1i(glGetUniformLocation(program, "num_materials"), numMaterials);
         glUniform1i(glGetUniformLocation(program, "frame_counter"), frameCounter);
+        glUniform1i(glGetUniformLocation(program, "max_bounces"), maxBounces);
         glUniform1f(glGetUniformLocation(program, "rand0to1"), (float) Math.random());
 
         glDispatchCompute((int) Math.ceil(width / 8f), (int) Math.ceil(height / 4f), 1);

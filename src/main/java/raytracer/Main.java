@@ -1,13 +1,14 @@
 package raytracer;
 
+import raytracer.config.RenderConfig;
+
 public class Main {
-    private static final int WIDTH = 800;
-    private static final int HEIGHT = 800;
-
     public static void main(String[] args) {
-        Window.init(WIDTH, HEIGHT);
+        RenderConfig config = RenderConfig.fromFile("src/main/resources/config.json");
 
-        RayTracer rt = new RayTracer(WIDTH, HEIGHT);
+        Window.init(config.quality().width(), config.quality().height());
+
+        RayTracer rt = new RayTracer(config);
         rt.run();
         rt.cleanup();
 

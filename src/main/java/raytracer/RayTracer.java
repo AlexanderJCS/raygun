@@ -2,6 +2,8 @@ package raytracer;
 
 import org.joml.Vector3f;
 import org.joml.Vector3i;
+import raytracer.config.RenderConfig;
+import raytracer.config.Savepoint;
 import raytracer.ssbo.MaterialsBuffer;
 import raytracer.ssbo.Mesh;
 import raytracer.ssbo.ObjectsBuffer;
@@ -16,16 +18,15 @@ public class RayTracer {
     private final ObjectsBuffer objectsBuffer;
     private final MaterialsBuffer materialsBuffer;
 
-    private final int width, height;
+    private final RenderConfig config;
 
-    public RayTracer(int width, int height) {
-        this.width = width;
-        this.height = height;
+    public RayTracer(RenderConfig config) {
+        this.config = config;
 
         screenQuad = new ScreenQuad();
         textureShader = new TextureShader();
         rayTracerCompute = new RayTracerCompute();
-        screenTexture = new ScreenTexture(width, height);
+        screenTexture = new ScreenTexture(config.quality().width(), config.quality().height());
 
         Mesh cornellFloor = new Mesh(
                 new Vector3f[]{
@@ -150,29 +151,43 @@ public class RayTracer {
                 new float[]{0.001f, 0, 0.025f});
     }
 
+    private void computeFrame(Clock clock) {
+        materialsBuffer.bind();
+        objectsBuffer.bind();
+        screenTexture.bindWrite();
+        rayTracerCompute.compute(config.quality().width(), config.quality().height(), objectsBuffer.numObjects(), clock.getFrameCount(), config.quality().bounces());
+        screenTexture.unbindWrite();
+        objectsBuffer.unbind();
+        materialsBuffer.unbind();
+    }
+
+    private void drawFrame() {
+        screenTexture.bindRead();
+        textureShader.bind();
+        screenQuad.draw();
+        textureShader.unbind();
+        screenTexture.unbindRead();
+    }
+
     public void run() {
         Clock clock = new Clock();
 
         while (Window.shouldRun()) {
-            materialsBuffer.bind();
-            objectsBuffer.bind();
-            screenTexture.bindWrite();
-            rayTracerCompute.compute(width, height, objectsBuffer.numObjects(), 0, clock.getFrameCount());
-            screenTexture.unbindWrite();
-            objectsBuffer.unbind();
-            materialsBuffer.unbind();
-
-            screenTexture.bindRead();
-            textureShader.bind();
-            screenQuad.draw();
-            textureShader.unbind();
-            screenTexture.unbindRead();
+            computeFrame(clock);
+            drawFrame();
 
             Window.update();
             Window.clear();
             clock.update();
 
             Window.setTitle("Ray Tracer | FPS: " + Math.round(clock.getSmoothedFps()) + " | Frame Time: " + (Math.round(1 / clock.getSmoothedFps() * 10000) / 10f) + "ms");
+
+            for (Savepoint savepoint : config.savepoints()) {
+                if (savepoint.readyToSave(clock.getTimef(), clock.getFrameCount())) {
+                    screenTexture.saveToFile(savepoint.path());
+                    savepoint.markSaved();
+                }
+            }
         }
     }
 

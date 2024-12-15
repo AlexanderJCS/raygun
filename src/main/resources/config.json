@@ -1,0 +1,25 @@
+{
+  "quality": {
+    "width": 800,
+    "height": 800,
+    "bounces": 15
+  },
+
+  "savepoints": [
+    {
+      "path": "output1.png",
+      "time": 60,
+      "unit": "seconds"
+    },
+    {
+      "path": "output2.png",
+      "time": 1,
+      "unit": "frames"
+    },
+    {
+      "path": "output3.png",
+      "time": 0.5,
+        "unit": "minutes"
+    }
+  ]
+}

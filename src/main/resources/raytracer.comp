@@ -33,8 +33,8 @@ layout(std430, binding = 1) buffer ObjectsBuffer {
 };
 
 uniform int num_objects;
-uniform int num_materials;
 uniform int frame_counter;
+uniform int max_bounces;
 
 struct HitRecord {
     vec3 p;
@@ -357,7 +357,7 @@ vec3 ray_color(Ray r) {
     vec3 color = vec3(1); // Tracks cumulative attenuation
     vec3 incomingLight = vec3(0); // Tracks accumulated emitted and reflected light
 
-    for (int i = 0; i < 20; i++) {
+    for (int i = 0; i < max_bounces; i++) {
         HitRecord rec;
         if (hit_world(r, 0.001, 1000.0, rec)) {
             Material material = materials[rec.material_id];
