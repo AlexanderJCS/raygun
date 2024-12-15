@@ -11,8 +11,8 @@ import raytracer.ArrayUtil;
  */
 public class ObjectsBuffer {
     // as defined by the compute shader #define MAX_COUNT [max_count]
-    private static final int MAX_TRIANGLES = 1000;
-    private static final int MAX_OBJECT = 100;
+    private static final int MAX_TRIANGLES = 2000;
+    private static final int MAX_OBJECT = 50;
 
     private final int ssbo;
     private final int numObjects;

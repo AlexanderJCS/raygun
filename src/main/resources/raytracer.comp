@@ -1,7 +1,7 @@
 #version 450
 
-#define MAX_COUNT 100
-#define MAX_TRIANGLES 1000
+#define MAX_COUNT 50
+#define MAX_TRIANGLES 2000
 
 layout(local_size_x = 8, local_size_y = 4, local_size_z = 1) in;
 layout(rgba32f, binding = 0) uniform image2D screen;
@@ -141,7 +141,7 @@ Camera camera_init() {
     cam.up = vec3(0, 1, 0);
     cam.fov = radians(36);
     cam.focus_dist = 3;
-    cam.defocus_angle = 0;
+    cam.defocus_angle = radians(2);
 
     float h = tan(cam.fov / 2);
     float viewport_height = 2 * h * cam.focus_dist;

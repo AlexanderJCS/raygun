@@ -56,11 +56,11 @@ public record Mesh(Vector3f[] vertices, Vector3i[] indices, int materialIndex) {
 
     public void transform(Vector3f translation, Vector3f rotation, Vector3f scale) {
         for (Vector3f vertex : vertices) {
+            vertex.mul(scale);
             vertex.rotateX(rotation.x);
             vertex.rotateY(rotation.y);
             vertex.rotateZ(rotation.z);
             vertex.add(translation);
-            vertex.mul(scale);
         }
     }
 
