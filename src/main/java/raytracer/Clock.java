@@ -1,5 +1,7 @@
 package raytracer;
 
+import java.util.Arrays;
+
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
 
 /**
@@ -107,20 +109,19 @@ public class Clock {
      * @return The smoothed fps over the last n samples
      */
     public double getSmoothedFps() {
-        int divide = fpsSamples.length;
         double sum = 0;
+        int validSamples = 0;
 
         for (double sample : fpsSamples) {
-            sum += sample;
-
-            // Prevent smoothed fps having to "climb up"
-            if (sample == 0) {
-                divide--;
+            if (sample > 0) {  // Ignore invalid samples (including 0)
+                sum += sample;
+                validSamples++;
             }
         }
 
-        return sum / divide;
+        return validSamples > 0 ? sum / validSamples : 0;
     }
+
 
     public double getUnsmoothedFps() {
         return 1 / getTimeDelta();
