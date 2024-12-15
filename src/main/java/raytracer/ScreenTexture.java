@@ -51,6 +51,11 @@ public class ScreenTexture {
 
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         for (int i = 0; i < data.length; i += 4) {
+            // clamp from HDR to LDR
+            data[i] = Math.min(1, Math.max(0, data[i]));
+            data[i + 1] = Math.min(1, Math.max(0, data[i + 1]));
+            data[i + 2] = Math.min(1, Math.max(0, data[i + 2]));
+
             int r = (int) (data[i] * 255);
             int g = (int) (data[i + 1] * 255);
             int b = (int) (data[i + 2] * 255);
