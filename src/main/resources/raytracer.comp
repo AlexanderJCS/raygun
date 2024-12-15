@@ -320,7 +320,7 @@ bool material_scatter(int material_id, Ray r_in, HitRecord rec, inout Ray scatte
         return true;
     } else if (material.type == 1) {
         // metal
-        vec3 reflected = normalize(reflect(r_in.direction, rec.normal));
+        vec3 reflected = reflect(r_in.direction, rec.normal);
         reflected += material.fuzzOrRefIdx * random_unit_vec();
 
         scattered.origin = rec.p;
