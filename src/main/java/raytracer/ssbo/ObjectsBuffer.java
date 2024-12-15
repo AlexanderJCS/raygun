@@ -9,16 +9,18 @@ import raytracer.ArrayUtil;
 /**
  * Uses an SSBO to store the spheres in the scene.
  */
-public class ObjectsBuffer {
+public class ObjectsBuffer extends ShaderStorageBuffer {
     // as defined by the compute shader #define MAX_COUNT [max_count]
     private static final int MAX_TRIANGLES = 2000;
     private static final int MAX_OBJECT = 50;
 
-    private final int ssbo;
     private final int numObjects;
 
     public ObjectsBuffer(Mesh[] meshes) {
+        super(glGenBuffers(), 1);
+
         if (meshes.length > MAX_OBJECT) {
+            cleanup();
             throw new IllegalArgumentException("Too many objects, max is " + MAX_OBJECT);
         }
 
@@ -49,8 +51,7 @@ public class ObjectsBuffer {
 
         int stride = (4 * MAX_TRIANGLES + 4 + 4) * Float.BYTES + (4 * MAX_TRIANGLES + 3) * Integer.BYTES + Integer.BYTES;
 
-        ssbo = glGenBuffers();
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, id());
         glBufferData(GL_SHADER_STORAGE_BUFFER, (long) stride * MAX_OBJECT * Integer.BYTES, GL_DYNAMIC_DRAW);
 
 
@@ -68,17 +69,5 @@ public class ObjectsBuffer {
 
     public int numObjects() {
         return numObjects;
-    }
-
-    public void bind() {
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssbo);
-    }
-
-    public void unbind() {
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, 0);
-    }
-
-    public void cleanup() {
-        glDeleteBuffers(ssbo);
     }
 }

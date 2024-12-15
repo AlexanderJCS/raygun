@@ -5,11 +5,13 @@ import org.joml.Vector3f;
 import raytracer.ArrayUtil;
 
 
-public class MaterialsBuffer {
-    private final int ssbo;
+public class MaterialsBuffer extends ShaderStorageBuffer {
     private static final int MAX_MATERIALS = 100;
 
     public MaterialsBuffer(Vector3f[] albedos, Vector3f[] emissionColor, float[] emissionStrength, int[] materialType, float[] fuzz) {
+        super(glGenBuffers(), 0);
+
+
         float[] albedosFloat = ArrayUtil.toVec3FloatArray(albedos);
         float[] emissionColorFloat = ArrayUtil.toVec3FloatArray(emissionColor);
 
@@ -28,8 +30,7 @@ public class MaterialsBuffer {
         int[] materialTypePadded = new int[MAX_MATERIALS];
         System.arraycopy(materialType, 0, materialTypePadded, 0, materialType.length);
 
-        ssbo = glGenBuffers();
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, id());
         glBufferData(GL_SHADER_STORAGE_BUFFER, (long) (MAX_MATERIALS * 10) * Float.BYTES, GL_DYNAMIC_DRAW);
 
         for (int i = 0; i < MAX_MATERIALS; i++) {
@@ -39,17 +40,5 @@ public class MaterialsBuffer {
             glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) (i * 12 + 8) * Float.BYTES, new int[]{materialTypePadded[i]});
             glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) (i * 12 + 9) * Float.BYTES, new float[]{fuzzPadded[i]});
         }
-    }
-
-    public void bind() {
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo);
-    }
-
-    public void unbind() {
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, 0);
-    }
-
-    public void cleanup() {
-        glDeleteBuffers(ssbo);
     }
 }

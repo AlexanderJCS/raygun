@@ -6,40 +6,6 @@
   },
 
   "savepoints": [
-    {
-      "path": "renders/multiple_bunnies_10.png",
-      "time": 10,
-      "unit": "frames"
-    },
-    {
-      "path": "renders/multiple_bunnies_25.png",
-      "time": 25,
-      "unit": "frames"
-    },
-    {
-      "path": "renders/multiple_bunnies_1000.png",
-      "time": 250,
-      "unit": "frames"
-    },
-    {
-      "path": "renders/multiple_bunnies_2000.png",
-      "time": 2000,
-      "unit": "frames"
-    },
-    {
-      "path": "renders/multiple_bunnies_4000.png",
-      "time": 4000,
-      "unit": "frames"
-    },
-    {
-      "path": "renders/multiple_bunnies_8000.png",
-      "time": 8000,
-      "unit": "frames"
-    },
-    {
-      "path": "renders/multiple_bunnies_16000.png",
-      "time": 16000,
-      "unit": "frames"
-    }
+
   ]
 }
