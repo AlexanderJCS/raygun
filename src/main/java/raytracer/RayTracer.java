@@ -7,6 +7,7 @@ import raytracer.config.Savepoint;
 import raytracer.ssbo.MaterialsBuffer;
 import raytracer.ssbo.Mesh;
 import raytracer.ssbo.ObjectsBuffer;
+import raytracer.ssbo.SpheresBuffer;
 
 import java.io.IOException;
 
@@ -17,6 +18,7 @@ public class RayTracer {
     private final ScreenTexture screenTexture;
     private final ObjectsBuffer objectsBuffer;
     private final MaterialsBuffer materialsBuffer;
+    private final SpheresBuffer spheresBuffer;
 
     private final RenderConfig config;
 
@@ -136,7 +138,7 @@ public class RayTracer {
             Mesh stanfordBunny2 = Mesh.load("src/main/resources/stanford_bunny.obj", 3);
             stanfordBunny2.transform(new Vector3f(0.3f, -1.02f, -1.8f), new Vector3f(0, (float) -Math.PI / 5, 0), new Vector3f(1.3f));
 
-            objectsBuffer = new ObjectsBuffer(new Mesh[]{cornellFloor, cornellCeiling, cornellBackWall, cornellLeftWall, cornellRightWall, cornellFrontWall, stanfordBunny, cornellLight});
+            objectsBuffer = new ObjectsBuffer(new Mesh[]{cornellFloor, cornellCeiling, cornellBackWall, cornellLeftWall, cornellRightWall, cornellFrontWall, cornellLight});
         } catch (IOException e) {
             throw new RuntimeException("Failed to load mesh", e);
         }
@@ -159,14 +161,24 @@ public class RayTracer {
                 new float[]{0.9f, 0, 0f, 0.8f},
                 new float[]{0, 0, 0.4f, 0}
         );
+
+        spheresBuffer = new SpheresBuffer(
+                new Vector3f[]{
+                        new Vector3f(0, -0.5f, -2f)
+                },
+                new float[]{0.5f},
+                new int[]{2}
+        );
     }
 
     private void computeFrame(Clock clock) {
         materialsBuffer.bind();
         objectsBuffer.bind();
+        spheresBuffer.bind();
         screenTexture.bindWrite();
-        rayTracerCompute.compute(config.quality().width(), config.quality().height(), objectsBuffer.numObjects(), clock.getFrameCount(), config.quality().bounces());
+        rayTracerCompute.compute(config.quality().width(), config.quality().height(), objectsBuffer.numObjects(), spheresBuffer.numSpheres(), clock.getFrameCount(), config.quality().bounces());
         screenTexture.unbindWrite();
+        spheresBuffer.unbind();
         objectsBuffer.unbind();
         materialsBuffer.unbind();
     }
@@ -202,6 +214,7 @@ public class RayTracer {
     }
 
     public void cleanup() {
+        spheresBuffer.cleanup();
         screenQuad.cleanup();
         textureShader.cleanup();
         rayTracerCompute.cleanup();

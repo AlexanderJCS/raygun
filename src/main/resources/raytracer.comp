@@ -83,7 +83,7 @@ float length_squared(vec3 v) {
 }
 
 // Credit for the hash, float_construct, and random(float x) functions: https://stackoverflow.com/a/17479300/18758660
-uint hash( uint x ) {
+uint hash(uint x) {
     x += ( x << 10u );
     x ^= ( x >>  6u );
     x += ( x <<  3u );
@@ -265,6 +265,39 @@ bool hit_triangle(vec3 v0, vec3 v1, vec3 v2, Ray ray, float ray_tmin, float ray_
     return true;
 }
 
+bool hit_sphere(int sphere_idx, Ray ray, float ray_tmin, float ray_tmax, inout HitRecord rec) {
+    Sphere sphere = spheres[sphere_idx];
+
+    vec3 oc = sphere.center - ray.origin;
+    float a = dot(ray.direction, ray.direction);
+    float h = dot(ray.direction, oc);
+    float c = length_squared(oc) - sphere.radius * sphere.radius;
+    float discriminant = h * h - a * c;
+
+    if (discriminant < 0) {
+        return false;
+    }
+
+    float sqrtd = sqrt(discriminant);
+
+    // Find the nearest root that lies in the acceptable range
+    float root = (h - sqrtd) / a;
+    if (root <= ray_tmin || ray_tmax <= root) {
+        root = (h + sqrtd) / a;
+        if (root <= ray_tmin || ray_tmax <= root) {
+            return false;
+        }
+    }
+
+    rec.t = root;
+    rec.p = ray_at(ray, rec.t);
+    rec.material_id = sphere.material_id;
+    vec3 outward_normal = (rec.p - sphere.center) / sphere.radius;
+    set_face_normal(ray, outward_normal, rec);
+
+    return true;
+}
+
 /**
  * Returns true if the ray hits the object, and updates the HitRecord with the hit information. Assumes ray.direction is
  * normalized.
@@ -304,6 +337,14 @@ bool hit_world(Ray r, float t_min, float t_max, inout HitRecord rec) {
 
     for (int i = 0; i < num_objects; i++) {
         if (hit_object(i, r, t_min, closest_so_far, temp_rec)) {
+            hit_anything = true;
+            closest_so_far = temp_rec.t;
+            rec = temp_rec;
+        }
+    }
+
+    for (int i = 0; i < num_spheres; i++) {
+        if (hit_sphere(i, r, t_min, closest_so_far, temp_rec)) {
             hit_anything = true;
             closest_so_far = temp_rec.t;
             rec = temp_rec;
