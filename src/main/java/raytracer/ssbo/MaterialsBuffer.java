@@ -8,7 +8,7 @@ import raytracer.ArrayUtil;
 public class MaterialsBuffer extends ShaderStorageBuffer {
     private static final int MAX_MATERIALS = 100;
 
-    public MaterialsBuffer(Vector3f[] albedos, Vector3f[] emissionColor, float[] emissionStrength, int[] materialType, float[] fuzz) {
+    public MaterialsBuffer(Vector3f[] albedos, Vector3f[] emissionColor, float[] emissionStrength, int[] materialType, float[] fuzz, float[] specularProb) {
         super(glGenBuffers(), 0);
 
 
@@ -30,8 +30,11 @@ public class MaterialsBuffer extends ShaderStorageBuffer {
         int[] materialTypePadded = new int[MAX_MATERIALS];
         System.arraycopy(materialType, 0, materialTypePadded, 0, materialType.length);
 
+        float[] specularProbPadded = new float[MAX_MATERIALS];
+        System.arraycopy(specularProb, 0, specularProbPadded, 0, specularProb.length);
+
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, id());
-        glBufferData(GL_SHADER_STORAGE_BUFFER, (long) (MAX_MATERIALS * 10) * Float.BYTES, GL_DYNAMIC_DRAW);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, (long) (MAX_MATERIALS * 11) * Float.BYTES, GL_DYNAMIC_DRAW);
 
         for (int i = 0; i < MAX_MATERIALS; i++) {
             glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) i * 12 * Float.BYTES, new float[]{albedosPadded[i * 3], albedosPadded[i * 3 + 1], albedosPadded[i * 3 + 2]});
@@ -39,6 +42,7 @@ public class MaterialsBuffer extends ShaderStorageBuffer {
             glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) (i * 12 + 7) * Float.BYTES, new float[]{emissionStrengthPadded[i]});
             glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) (i * 12 + 8) * Float.BYTES, new int[]{materialTypePadded[i]});
             glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) (i * 12 + 9) * Float.BYTES, new float[]{fuzzPadded[i]});
+            glBufferSubData(GL_SHADER_STORAGE_BUFFER, (long) (i * 12 + 10) * Float.BYTES, new float[]{specularProbPadded[i]});
         }
     }
 }

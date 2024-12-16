@@ -131,12 +131,12 @@ public class RayTracer {
             suzanne.transform(new Vector3f(0, 0, -3), new Vector3f(0, (float) -Math.PI / 8, 0), new Vector3f(0.5f, 0.5f, 0.5f));
 
             Mesh stanfordBunny = Mesh.load("src/main/resources/stanford_bunny.obj", 2);
-            stanfordBunny.transform(new Vector3f(-0.3f, -1.02f, -2.2f), new Vector3f(0, (float) Math.PI / 4, 0), new Vector3f(1.5f));
+            stanfordBunny.transform(new Vector3f(0f, -1.02f, -2.2f), new Vector3f(0), new Vector3f(1.5f));
 
             Mesh stanfordBunny2 = Mesh.load("src/main/resources/stanford_bunny.obj", 3);
             stanfordBunny2.transform(new Vector3f(0.3f, -1.02f, -1.8f), new Vector3f(0, (float) -Math.PI / 5, 0), new Vector3f(1.3f));
 
-            objectsBuffer = new ObjectsBuffer(new Mesh[]{cornellFloor, cornellCeiling, cornellBackWall, cornellLeftWall, cornellRightWall, cornellFrontWall, stanfordBunny, stanfordBunny2, cornellLight});
+            objectsBuffer = new ObjectsBuffer(new Mesh[]{cornellFloor, cornellCeiling, cornellBackWall, cornellLeftWall, cornellRightWall, cornellFrontWall, stanfordBunny, cornellLight});
         } catch (IOException e) {
             throw new RuntimeException("Failed to load mesh", e);
         }
@@ -145,18 +145,20 @@ public class RayTracer {
                 new Vector3f[]{
                         new Vector3f(0.9f, 0.9f, 0.9f),
                         new Vector3f(1, 1, 1),
-                        new Vector3f(1f, 0.82f, 0.86f),
+                        new Vector3f(0.8f, 0.3f, 0.3f),
                         new Vector3f(167/255f, 199/255f, 231/255f)
                 },
                 new Vector3f[]{
                         new Vector3f(0),
-                        new Vector3f(0.7f, 0.7f, 0.9f),
+                        new Vector3f(0.8f, 0.8f, 0.9f),
                         new Vector3f(0),
                         new Vector3f(0)
                 },
-                new float[]{0, 2f, 0, 0},
+                new float[]{0, 1f, 0, 0},
                 new int[]{0, 0, 1, 1},
-                new float[]{0.9f, 0, 0.8f, 0.8f});
+                new float[]{0.9f, 0, 0f, 0.8f},
+                new float[]{0, 0, 0.4f, 0}
+        );
     }
 
     private void computeFrame(Clock clock) {
