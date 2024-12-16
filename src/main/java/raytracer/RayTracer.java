@@ -147,7 +147,7 @@ public class RayTracer {
                 new Vector3f[]{
                         new Vector3f(0.9f, 0.9f, 0.9f),
                         new Vector3f(1, 1, 1),
-                        new Vector3f(0.8f, 0.3f, 0.3f),
+                        new Vector3f(1f, 0, 0),
                         new Vector3f(167/255f, 199/255f, 231/255f)
                 },
                 new Vector3f[]{
