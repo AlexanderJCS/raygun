@@ -7,7 +7,28 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 
-public record RenderConfig(Savepoint[] savepoints, RenderQuality quality, Camera camera) {
+public class RenderConfig {
+    private final Savepoint[] savepoints;
+    private final RenderQuality quality;
+    private final Camera camera;
+
+    public RenderConfig(Savepoint[] savepoints, RenderQuality quality, Camera camera) {
+        this.savepoints = savepoints;
+        this.quality = quality;
+        this.camera = camera;
+    }
+
+    public Savepoint[] savepoints() {
+        return savepoints;
+    }
+
+    public RenderQuality quality() {
+        return quality;
+    }
+
+    public Camera camera() {
+        return camera;
+    }
 
     public static RenderConfig fromFile(String filename) {
         try {

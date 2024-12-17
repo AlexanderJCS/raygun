@@ -27,12 +27,21 @@ public class Savepoint {
             return false;
         }
 
-        return switch (unit) {
-            case "frames" -> frameCount >= time;
-            case "seconds" -> currentTime >= time;
-            case "minutes" -> currentTime >= time * 60;
-            case "hours" -> currentTime >= time * 60 * 60;
-            default -> throw new IllegalArgumentException("Invalid unit: " + unit);
-        };
+        switch (unit) {
+            case "frames":
+                return frameCount >= time;
+
+            case "seconds":
+                return currentTime >= time;
+
+            case "minutes":
+                return currentTime >= time * 60;
+
+            case "hours":
+                return currentTime >= time * 60 * 60;
+
+            default:
+                throw new IllegalArgumentException("Invalid unit: " + unit);
+        }
     }
 }

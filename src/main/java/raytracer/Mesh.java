@@ -6,7 +6,17 @@ import org.joml.Vector3i;
 import java.io.*;
 import java.util.Arrays;
 
-public record Mesh(Vector3f[] vertices, Vector3i[] indices, int materialIndex) {
+public class Mesh {
+    private final Vector3f[] vertices;
+    private final Vector3i[] indices;
+    private final int materialIndex;
+
+    public Mesh(Vector3f[] vertices, Vector3i[] indices, int materialIndex) {
+        this.vertices = vertices;
+        this.indices = indices;
+        this.materialIndex = materialIndex;
+    }
+
     /**
      * Loads an obj file from the given path.
      * @param path the path to the obj file
@@ -52,6 +62,18 @@ public record Mesh(Vector3f[] vertices, Vector3i[] indices, int materialIndex) {
 
             return new Mesh(vertices, indices, materialIndex);
         }
+    }
+
+    public Vector3f[] vertices() {
+        return vertices;
+    }
+
+    public Vector3i[] indices() {
+        return indices;
+    }
+
+    public int materialIndex() {
+        return materialIndex;
     }
 
     public void transform(Vector3f translation, Vector3f rotation, Vector3f scale) {

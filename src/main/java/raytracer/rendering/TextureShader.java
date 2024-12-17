@@ -3,26 +3,22 @@ package raytracer.rendering;
 import static org.lwjgl.opengl.GL43.*;
 
 public class TextureShader {
-    private static final String vertexShaderSource = """
-            #version 450 core
-            layout(location = 0) in vec3 position;
-            layout(location = 1) in vec2 texCoord;
-            out vec2 fragTexCoord;
-            void main() {
-                gl_Position = vec4(position, 1.0);
-                fragTexCoord = texCoord;
-            }
-            """;
+    private static final String vertexShaderSource = "#version 450 core\n" +
+            "layout(location = 0) in vec3 position;\n" +
+            "layout(location = 1) in vec2 texCoord;\n" +
+            "out vec2 fragTexCoord;\n" +
+            "void main() {\n" +
+            "    gl_Position = vec4(position, 1.0);\n" +
+            "    fragTexCoord = texCoord;\n" +
+            "};";
 
-    private static final String fragmentShaderSource = """
-            #version 450 core
-            in vec2 fragTexCoord;
-            out vec4 color;
-            uniform sampler2D tex;
-            void main() {
-                color = texture(tex, fragTexCoord);
-            }
-            """;
+    private static final String fragmentShaderSource = "#version 450 core\n" +
+            "in vec2 fragTexCoord;\n" +
+            "out vec4 color;\n" +
+            "uniform sampler2D tex;\n" +
+            "void main() {\n" +
+            "    color = texture(tex, fragTexCoord);\n" +
+            "}\n";
 
     private final int program;
 
