@@ -83,7 +83,6 @@ struct Camera {
     vec3 pixel_delta_u, pixel_delta_v;
 };
 
-uniform float rand0to1;
 uint rand_seed = gl_GlobalInvocationID.x + imageSize(screen).x * (gl_GlobalInvocationID.y + imageSize(screen).y * frame_counter);
 
 
