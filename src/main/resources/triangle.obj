@@ -1,0 +1,25 @@
+# quad
+# Created 12/17/2024 by d8amo
+o quad
+
+# bottom left
+v -1.0 -1.0 0.0
+
+# bottom right
+v 1.0 -1.0 0.0
+
+# top right
+v 1.0 1.0 0.0
+
+# bottom left
+vt 0.0 0.0
+
+# bottom right
+vt 1.0 0.0
+
+# top right
+vt 1.0 1.0
+
+vn 0.0 0.0 1.0
+
+f 1/1/1 2/2/1 3/3/1

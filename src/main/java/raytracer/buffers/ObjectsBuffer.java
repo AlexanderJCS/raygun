@@ -34,7 +34,7 @@ public class ObjectsBuffer extends ShaderStorageBuffer {
         float[][] vertices = new float[MAX_OBJECT][MAX_TRIANGLES * 4];
         int[][] indices = new int[MAX_OBJECT][MAX_TRIANGLES * 4];
         float[][] texCoords = new float[MAX_OBJECT][MAX_TRIANGLES * 4];
-        int[][] texIndices = new int[MAX_OBJECT][MAX_TRIANGLES * 4];
+        int[][] texIndices = new int[MAX_OBJECT][MAX_TRIANGLES * 2];
         int[] materialIDs = new int[MAX_OBJECT];
 
         for (int i = 0; i < meshes.length; i++) {
@@ -56,8 +56,8 @@ public class ObjectsBuffer extends ShaderStorageBuffer {
             }
 
             for (int j = 0; j < texCoordsVec.length; j++) {
-                texCoords[i][j * 4] = texCoordsVec[j].x;
-                texCoords[i][j * 4 + 1] = texCoordsVec[j].y;
+                texCoords[i][j * 2] = texCoordsVec[j].x;
+                texCoords[i][j * 2 + 1] = texCoordsVec[j].y;
             }
 
             for (int j = 0; j < texIndicesVec.length; j++) {

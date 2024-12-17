@@ -68,6 +68,7 @@ struct HitRecord {
     float t;
     int material_id;
     bool front_face;
+    vec2 uv;
 };
 
 struct Ray {
@@ -226,6 +227,31 @@ bool hit_bounding_box(vec3 aabb_min, vec3 aabb_max, Ray ray) {
     return t_enter <= t_exit;
 }
 
+
+vec2 uv_from_triangle(vec2 uv0, vec2 uv1, vec2 uv2, vec3 barycentric) {
+    return barycentric.x * uv0 + barycentric.y * uv1 + barycentric.z * uv2;
+}
+
+vec3 tri_barycentric(vec3 p, vec3 a, vec3 b, vec3 c) {
+    vec3 v0 = b - a;
+    vec3 v1 = c - a;
+    vec3 v2 = p - a;
+
+    float d00 = dot(v0, v0);
+    float d01 = dot(v0, v1);
+    float d11 = dot(v1, v1);
+    float d20 = dot(v2, v0);
+    float d21 = dot(v2, v1);
+
+    float denom = d00 * d11 - d01 * d01;
+
+    float v = (d11 * d20 - d01 * d21) / denom;
+    float w = (d00 * d21 - d01 * d20) / denom;
+    float u = 1 - v - w;
+
+    return vec3(u, v, w);
+}
+
 /**
  * Implements the Möller–Trumbore intersection algorithm. Assumes vertices are counterclockwise and the ray.direction
  * vector is normalized.
@@ -333,6 +359,13 @@ bool hit_object(int object_index, Ray ray, float ray_tmin, float ray_tmax, inout
         if (hit_triangle(v0, v1, v2, ray, ray_tmin, closest_so_far, objects[object_index].material_id, closest_rec)) {
             hit_anything = true;
             closest_so_far = closest_rec.t;
+            closest_rec.uv = uv_from_triangle(
+                objects[object_index].tex_coords[objects[object_index].tex_indices[i].x],
+                objects[object_index].tex_coords[objects[object_index].tex_indices[i].y],
+                objects[object_index].tex_coords[objects[object_index].tex_indices[i].z],
+                tri_barycentric(closest_rec.p, v0, v1, v2)
+            );
+
             rec = closest_rec;
         }
     }
