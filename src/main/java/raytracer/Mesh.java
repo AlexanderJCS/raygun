@@ -1,12 +1,13 @@
 package raytracer;
 
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 
 import java.io.*;
 import java.util.Arrays;
 
-public record Mesh(Vector3f[] vertices, Vector3i[] indices, int materialIndex) {
+public record Mesh(Vector3f[] vertices, Vector3i[] indices, Vector2f[] texCoords, Vector3i[] texIndices, int materialIndex) {
     /**
      * Loads an obj file from the given path.
      * @param path the path to the obj file
@@ -50,7 +51,42 @@ public record Mesh(Vector3f[] vertices, Vector3i[] indices, int materialIndex) {
                     })
                     .toArray(Vector3i[]::new);
 
-            return new Mesh(vertices, indices, materialIndex);
+            fis.getChannel().position(0);
+            reader = new BufferedReader(new InputStreamReader(fis));
+
+            Vector2f[] texCoords = reader.lines()
+                    .filter(line -> line.startsWith("vt "))
+                    .map(line -> {
+                        String[] split = line.split(" ");
+                        return new Vector2f(
+                                Float.parseFloat(split[1]),
+                                Float.parseFloat(split[2])
+                        );
+                    })
+                    .toArray(Vector2f[]::new);
+
+            fis.getChannel().position(0);
+            reader = new BufferedReader(new InputStreamReader(fis));
+
+            Vector3i[] texIndices = reader.lines()
+                    .filter(line -> line.startsWith("f "))
+                    .map(line -> {
+                        String[] split = line.split(" ");
+
+                        String[][] split2 = new String[3][];
+                        for (int i = 0; i < 3; i++) {
+                            split2[i] = split[i + 1].split("/");
+                        }
+
+                        return new Vector3i(
+                                Integer.parseInt(split2[0][1]) - 1,
+                                Integer.parseInt(split2[1][1]) - 1,
+                                Integer.parseInt(split2[2][1]) - 1
+                        );
+                    })
+                    .toArray(Vector3i[]::new);
+
+            return new Mesh(vertices, indices, texCoords, texIndices, materialIndex);
         }
     }
 

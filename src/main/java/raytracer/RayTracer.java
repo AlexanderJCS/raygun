@@ -39,115 +39,108 @@ public class RayTracer {
         screenTexture = new ScreenTexture(config.quality().width(), config.quality().height());
         cameraBuffer = new CameraBuffer(config.camera());
 
-        Mesh cornellFloor = new Mesh(
-                new Vector3f[]{
-                        new Vector3f(-2, -0.99f, -0),
-                        new Vector3f(2, -0.99f, -0),
-                        new Vector3f(2, -0.99f, -4),
-                        new Vector3f(-2, -0.99f, -4)
-                },
-                new Vector3i[]{
-                        new Vector3i(0, 1, 2),
-                        new Vector3i(0, 2, 3)
-                },
-                0
-        );
-
-        Mesh cornellCeiling = new Mesh(
-                new Vector3f[]{
-                        new Vector3f(-1, 0.99f, -1),
-                        new Vector3f(1, 0.99f, -1),
-                        new Vector3f(1, 0.99f, -3),
-                        new Vector3f(-1, 0.99f, -3)
-                },
-                new Vector3i[]{
-                        new Vector3i(0, 2, 1),
-                        new Vector3i(0, 3, 2)
-                },
-                0
-        );
-
-        Mesh cornellBackWall = new Mesh(
-                new Vector3f[]{
-                        new Vector3f(-1, -1, -2.999f),
-                        new Vector3f(1, -1, -2.999f),
-                        new Vector3f(1, 1, -2.999f),
-                        new Vector3f(-1, 1, -2.999f)
-                },
-                new Vector3i[]{
-                        new Vector3i(0, 1, 2),
-                        new Vector3i(0, 2, 3)
-                },
-                0
-        );
-
-        Mesh cornellLeftWall = new Mesh(
-                new Vector3f[]{
-                        new Vector3f(-0.999f, -2, -1),
-                        new Vector3f(-0.999f, -2, -3),
-                        new Vector3f(-0.999f, 2, -3),
-                        new Vector3f(-0.999f, 2, -1)
-                },
-                new Vector3i[]{
-                        new Vector3i(0, 1, 2),
-                        new Vector3i(0, 2, 3)
-                },
-                0
-        );
-
-        Mesh cornellRightWall = new Mesh(
-                new Vector3f[]{
-                        new Vector3f(0.999f, -1, -1),
-                        new Vector3f(0.999f, -1, -3),
-                        new Vector3f(0.999f, 1, -3),
-                        new Vector3f(0.999f, 1, -1)
-                },
-                new Vector3i[]{
-                        new Vector3i(0, 2, 1),
-                        new Vector3i(0, 3, 2)
-                },
-                0
-        );
-
-        Mesh cornellFrontWall = new Mesh(
-                new Vector3f[]{
-                        new Vector3f(-1, -1, -1.001f),
-                        new Vector3f(1, -1, -1.001f),
-                        new Vector3f(1, 1, -1.001f),
-                        new Vector3f(-1, 1, -1.001f)
-                },
-                new Vector3i[]{
-                        new Vector3i(0, 2, 1),
-                        new Vector3i(0, 3, 2)
-                },
-                0
-        );
-
-        Mesh cornellLight = new Mesh(
-                new Vector3f[]{
-                        new Vector3f(-0.15f, 0.989f, -1.5f),
-                        new Vector3f(0.15f, 0.989f, -1.5f),
-                        new Vector3f(0.15f, 0.989f, -2.5f),
-                        new Vector3f(-0.15f, 0.989f, -2.5f)
-                },
-                new Vector3i[]{
-                        new Vector3i(0, 1, 2),
-                        new Vector3i(0, 2, 3)
-                },
-                1
-        );
+//        Mesh cornellFloor = new Mesh(
+//                new Vector3f[]{
+//                        new Vector3f(-2, -0.99f, -0),
+//                        new Vector3f(2, -0.99f, -0),
+//                        new Vector3f(2, -0.99f, -4),
+//                        new Vector3f(-2, -0.99f, -4)
+//                },
+//                new Vector3i[]{
+//                        new Vector3i(0, 1, 2),
+//                        new Vector3i(0, 2, 3)
+//                },
+//                0
+//        );
+//
+//        Mesh cornellCeiling = new Mesh(
+//                new Vector3f[]{
+//                        new Vector3f(-1, 0.99f, -1),
+//                        new Vector3f(1, 0.99f, -1),
+//                        new Vector3f(1, 0.99f, -3),
+//                        new Vector3f(-1, 0.99f, -3)
+//                },
+//                new Vector3i[]{
+//                        new Vector3i(0, 2, 1),
+//                        new Vector3i(0, 3, 2)
+//                },
+//                0
+//        );
+//
+//        Mesh cornellBackWall = new Mesh(
+//                new Vector3f[]{
+//                        new Vector3f(-1, -1, -2.999f),
+//                        new Vector3f(1, -1, -2.999f),
+//                        new Vector3f(1, 1, -2.999f),
+//                        new Vector3f(-1, 1, -2.999f)
+//                },
+//                new Vector3i[]{
+//                        new Vector3i(0, 1, 2),
+//                        new Vector3i(0, 2, 3)
+//                },
+//                0
+//        );
+//
+//        Mesh cornellLeftWall = new Mesh(
+//                new Vector3f[]{
+//                        new Vector3f(-0.999f, -2, -1),
+//                        new Vector3f(-0.999f, -2, -3),
+//                        new Vector3f(-0.999f, 2, -3),
+//                        new Vector3f(-0.999f, 2, -1)
+//                },
+//                new Vector3i[]{
+//                        new Vector3i(0, 1, 2),
+//                        new Vector3i(0, 2, 3)
+//                },
+//                0
+//        );
+//
+//        Mesh cornellRightWall = new Mesh(
+//                new Vector3f[]{
+//                        new Vector3f(0.999f, -1, -1),
+//                        new Vector3f(0.999f, -1, -3),
+//                        new Vector3f(0.999f, 1, -3),
+//                        new Vector3f(0.999f, 1, -1)
+//                },
+//                new Vector3i[]{
+//                        new Vector3i(0, 2, 1),
+//                        new Vector3i(0, 3, 2)
+//                },
+//                0
+//        );
+//
+//        Mesh cornellFrontWall = new Mesh(
+//                new Vector3f[]{
+//                        new Vector3f(-1, -1, -1.001f),
+//                        new Vector3f(1, -1, -1.001f),
+//                        new Vector3f(1, 1, -1.001f),
+//                        new Vector3f(-1, 1, -1.001f)
+//                },
+//                new Vector3i[]{
+//                        new Vector3i(0, 2, 1),
+//                        new Vector3i(0, 3, 2)
+//                },
+//                0
+//        );
+//
+//        Mesh cornellLight = new Mesh(
+//                new Vector3f[]{
+//                        new Vector3f(-0.15f, 0.989f, -1.5f),
+//                        new Vector3f(0.15f, 0.989f, -1.5f),
+//                        new Vector3f(0.15f, 0.989f, -2.5f),
+//                        new Vector3f(-0.15f, 0.989f, -2.5f)
+//                },
+//                new Vector3i[]{
+//                        new Vector3i(0, 1, 2),
+//                        new Vector3i(0, 2, 3)
+//                },
+//                1
+//        );
 
         try {
-            Mesh suzanne = Mesh.load("src/main/resources/suzanne.obj", 2);
-            suzanne.transform(new Vector3f(0, 0, -3), new Vector3f(0, (float) -Math.PI / 8, 0), new Vector3f(0.5f, 0.5f, 0.5f));
-
-            Mesh stanfordBunny = Mesh.load("src/main/resources/stanford_bunny.obj", 2);
-            stanfordBunny.transform(new Vector3f(0f, -1.02f, -2.2f), new Vector3f(0), new Vector3f(1.5f));
-
-            Mesh stanfordBunny2 = Mesh.load("src/main/resources/stanford_bunny.obj", 3);
-            stanfordBunny2.transform(new Vector3f(0.3f, -1.02f, -1.8f), new Vector3f(0, (float) -Math.PI / 5, 0), new Vector3f(1.3f));
-
-            objectsBuffer = new ObjectsBuffer(new Mesh[]{cornellFloor, cornellCeiling, cornellBackWall, cornellLeftWall, cornellRightWall, cornellFrontWall, cornellLight});
+            Mesh cube = Mesh.load("src/main/resources/cube.obj", 0);
+            cube.transform(new Vector3f(0, 0, -5), new Vector3f(0, 0, 0), new Vector3f(1));
+            objectsBuffer = new ObjectsBuffer(new Mesh[]{cube});
         } catch (IOException e) {
             throw new RuntimeException("Failed to load mesh", e);
         }
@@ -174,10 +167,14 @@ public class RayTracer {
 
         spheresBuffer = new SpheresBuffer(
                 new Vector3f[]{
-                        new Vector3f(0, -0.5f, -2f)
+//                        new Vector3f(0, -0.5f, -2f)
                 },
-                new float[]{0.5f},
-                new int[]{2}
+                new float[]{
+//                        0.5f
+                },
+                new int[]{
+//                        2
+                }
         );
     }
 
