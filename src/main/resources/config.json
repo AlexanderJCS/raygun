@@ -9,7 +9,7 @@
     "origin": [0, 0, 2],
     "lookAt": [0, 0, -1],
     "up": [0, 1, 0],
-    "fov": 30,
+    "fov": 36,
     "focusDist": 3,
     "defocusAngle": 2
   },
