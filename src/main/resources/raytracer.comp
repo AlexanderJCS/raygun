@@ -22,6 +22,7 @@ struct Material {
     int type;  // 0 = diffuse, 1 = metal, 2 = glass
     float fuzz_or_ref_idx;  // fuzz or refraction index, for metal and glass materials
     float specular_prob;  // probability of specular reflection, for metal materials
+    int texture_id;  // texture id. -1 if the texture = the albedo
 };
 
 layout(std430, binding = 0) buffer MaterialsBuffer {
@@ -56,6 +57,8 @@ uniform int num_objects;
 uniform int num_spheres;
 uniform int frame_counter;
 uniform int max_bounces;
+
+uniform sampler2DArray textures;
 
 struct HitRecord {
     vec3 p;
@@ -485,9 +488,10 @@ void main() {
     pixel_coords = ivec2(pixel_coords.x, dimensions.y - pixel_coords.y);
 
     Camera cam = camera_init();
-    vec3 newPixel = render(cam, ivec2(gl_GlobalInvocationID.xy));
 
+    vec3 newPixel = render(cam, ivec2(gl_GlobalInvocationID.xy));
     vec3 oldPixel = imageLoad(screen, pixel_coords).rgb;
+
     vec3 pixel = (oldPixel * float(frame_counter) + newPixel) / float(frame_counter + 1);
 
     imageStore(screen, pixel_coords, vec4(pixel, 1));

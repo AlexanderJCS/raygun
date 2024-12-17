@@ -9,9 +9,12 @@ import raytracer.rendering.ScreenQuad;
 import raytracer.shaders.RayTracerCompute;
 import raytracer.rendering.TextureShader;
 import raytracer.rendering.ScreenTexture;
+import raytracer.texture.ArrayTexture;
+import raytracer.texture.Texture;
 import raytracer.util.Clock;
 
 import java.io.IOException;
+import java.sql.Array;
 
 public class RayTracer {
     private final ScreenQuad screenQuad;
@@ -21,6 +24,7 @@ public class RayTracer {
     private final ObjectsBuffer objectsBuffer;
     private final MaterialsBuffer materialsBuffer;
     private final SpheresBuffer spheresBuffer;
+    private final ArrayTexture arrayTexture;
 
     private final RenderConfig config;
     private final CameraBuffer cameraBuffer;
@@ -28,6 +32,7 @@ public class RayTracer {
     public RayTracer(RenderConfig config) {
         this.config = config;
 
+        arrayTexture = new ArrayTexture(new Texture[]{new Texture("src/main/resources/textures/bricks/diffuse.png")}, 0);
         screenQuad = new ScreenQuad();
         textureShader = new TextureShader();
         rayTracerCompute = new RayTracerCompute();
@@ -163,7 +168,8 @@ public class RayTracer {
                 new float[]{0, 1f, 0, 0},
                 new int[]{0, 0, 1, 1},
                 new float[]{0.9f, 0, 0f, 0.8f},
-                new float[]{0, 0, 0.4f, 0}
+                new float[]{0, 0, 0.4f, 0},
+                new int[]{0, 0, 0, 0}
         );
 
         spheresBuffer = new SpheresBuffer(
@@ -180,9 +186,11 @@ public class RayTracer {
         objectsBuffer.bind();
         spheresBuffer.bind();
         cameraBuffer.bind();
+        arrayTexture.bind();
         screenTexture.bindWrite();
         rayTracerCompute.compute(config.quality().width(), config.quality().height(), objectsBuffer.numObjects(), spheresBuffer.numSpheres(), clock.getFrameCount(), config.quality().bounces());
         screenTexture.unbindWrite();
+        arrayTexture.bind();
         cameraBuffer.unbind();
         spheresBuffer.unbind();
         objectsBuffer.unbind();
