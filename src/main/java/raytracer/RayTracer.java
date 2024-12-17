@@ -2,12 +2,14 @@ package raytracer;
 
 import org.joml.Vector3f;
 import org.joml.Vector3i;
+import raytracer.buffers.*;
 import raytracer.config.RenderConfig;
 import raytracer.config.Savepoint;
-import raytracer.ssbo.MaterialsBuffer;
-import raytracer.ssbo.Mesh;
-import raytracer.ssbo.ObjectsBuffer;
-import raytracer.ssbo.SpheresBuffer;
+import raytracer.rendering.ScreenQuad;
+import raytracer.shaders.RayTracerCompute;
+import raytracer.rendering.TextureShader;
+import raytracer.rendering.ScreenTexture;
+import raytracer.util.Clock;
 
 import java.io.IOException;
 

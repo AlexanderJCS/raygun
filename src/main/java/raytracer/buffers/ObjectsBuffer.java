@@ -1,9 +1,10 @@
-package raytracer.ssbo;
+package raytracer.buffers;
 
 import static org.lwjgl.opengl.GL45.*;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
-import raytracer.ArrayUtil;
+import raytracer.util.ArrayUtil;
+import raytracer.Mesh;
 
 
 /**

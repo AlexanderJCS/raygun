@@ -1,8 +1,6 @@
-package raytracer;
+package raytracer.buffers;
 
 import raytracer.config.Camera;
-
-import java.util.Arrays;
 
 import static org.lwjgl.opengl.GL45.*;
 
@@ -16,8 +14,6 @@ public class CameraBuffer {
         this.bind();
         // 15 = 4 (origin + 1 pad) + 4 (lookAt + 1 pad) + 4 (up + 1 pad) + 1 (fov) + 1 (focusDist) + 1 (defocusAngle) - 1 (for god knows what reason)
         glBufferData(GL_UNIFORM_BUFFER, 15 * Float.BYTES, GL_STATIC_DRAW);
-
-        System.out.println(Arrays.toString(config.origin()));
 
         glBufferSubData(GL_UNIFORM_BUFFER, 0, config.origin());
         glBufferSubData(GL_UNIFORM_BUFFER, 4 * Float.BYTES, config.lookAt());

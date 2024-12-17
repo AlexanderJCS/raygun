@@ -1,8 +1,8 @@
-package raytracer.ssbo;
+package raytracer.buffers;
 
 import static org.lwjgl.opengl.GL43.*;
 import org.joml.Vector3f;
-import raytracer.ArrayUtil;
+import raytracer.util.ArrayUtil;
 
 
 public class MaterialsBuffer extends ShaderStorageBuffer {

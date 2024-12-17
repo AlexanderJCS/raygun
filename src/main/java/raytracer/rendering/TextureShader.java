@@ -1,4 +1,4 @@
-package raytracer;
+package raytracer.rendering;
 
 import static org.lwjgl.opengl.GL43.*;
 
