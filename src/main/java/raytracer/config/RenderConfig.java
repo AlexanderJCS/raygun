@@ -6,7 +6,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-public record RenderConfig(Savepoint[] savepoints, RenderQuality quality) {
+
+public record RenderConfig(Savepoint[] savepoints, RenderQuality quality, Camera camera) {
 
     public static RenderConfig fromFile(String filename) {
         try {

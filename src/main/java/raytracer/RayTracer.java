@@ -21,6 +21,7 @@ public class RayTracer {
     private final SpheresBuffer spheresBuffer;
 
     private final RenderConfig config;
+    private final CameraBuffer cameraBuffer;
 
     public RayTracer(RenderConfig config) {
         this.config = config;
@@ -29,6 +30,7 @@ public class RayTracer {
         textureShader = new TextureShader();
         rayTracerCompute = new RayTracerCompute();
         screenTexture = new ScreenTexture(config.quality().width(), config.quality().height());
+        cameraBuffer = new CameraBuffer(config.camera());
 
         Mesh cornellFloor = new Mesh(
                 new Vector3f[]{
@@ -175,9 +177,11 @@ public class RayTracer {
         materialsBuffer.bind();
         objectsBuffer.bind();
         spheresBuffer.bind();
+        cameraBuffer.bind();
         screenTexture.bindWrite();
         rayTracerCompute.compute(config.quality().width(), config.quality().height(), objectsBuffer.numObjects(), spheresBuffer.numSpheres(), clock.getFrameCount(), config.quality().bounces());
         screenTexture.unbindWrite();
+        cameraBuffer.unbind();
         spheresBuffer.unbind();
         objectsBuffer.unbind();
         materialsBuffer.unbind();
@@ -214,6 +218,7 @@ public class RayTracer {
     }
 
     public void cleanup() {
+        cameraBuffer.cleanup();
         spheresBuffer.cleanup();
         screenQuad.cleanup();
         textureShader.cleanup();
