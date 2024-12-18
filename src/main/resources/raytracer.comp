@@ -434,9 +434,14 @@ vec3 calc_normal(vec3 material_normal, vec3 tangent, vec3 bitangent, vec3 normal
 bool material_scatter(int material_id, Ray r_in, HitRecord rec, inout Ray scattered, inout vec3 attenuation) {
     Material material = materials[material_id];
     vec3 texture_color = material.texture_id == -1 ? material.albedo : texture(texture_diffuse, vec3(rec.uv, material.texture_id)).xyz;
-    vec3 texture_normal = texture(texture_normals, vec3(rec.uv, material.texture_id)).xyz;
-    texture_normal = texture_normal * 2 - 1;
-    vec3 normal = calc_normal(texture_normal, rec.tangent, rec.bitangent, rec.normal);
+
+    vec3 normal = rec.normal;
+
+    if (material.texture_id != -1) {
+        vec3 texture_normal = texture(texture_normals, vec3(rec.uv, material.texture_id)).xyz;
+        texture_normal = texture_normal * 2 - 1;
+        vec3 normal = calc_normal(texture_normal, rec.tangent, rec.bitangent, rec.normal);
+    }
 
     if (material.type == 0) {
         // diffuse
