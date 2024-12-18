@@ -443,7 +443,7 @@ bool material_scatter(int material_id, Ray r_in, HitRecord rec, inout Ray scatte
         scattered.origin = rec.p;
         scattered.direction = normal + random_unit_vec();
 
-        attenuation = normal * 0.5 + 0.5;
+        attenuation = texture_color;
 
         return true;
     } else if (material.type == 1) {
