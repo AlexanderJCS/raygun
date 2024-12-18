@@ -1,7 +1,6 @@
 package raytracer;
 
 import org.joml.Vector3f;
-import org.joml.Vector3i;
 import raytracer.buffers.*;
 import raytracer.config.RenderConfig;
 import raytracer.config.Savepoint;
@@ -14,7 +13,6 @@ import raytracer.texture.Texture;
 import raytracer.util.Clock;
 
 import java.io.IOException;
-import java.sql.Array;
 
 public class RayTracer {
     private final ScreenQuad screenQuad;
@@ -24,7 +22,8 @@ public class RayTracer {
     private final ObjectsBuffer objectsBuffer;
     private final MaterialsBuffer materialsBuffer;
     private final SpheresBuffer spheresBuffer;
-    private final ArrayTexture arrayTexture;
+    private final ArrayTexture arrayTextureDiffuse;
+    private final ArrayTexture arrayTextureNormal;
 
     private final RenderConfig config;
     private final CameraBuffer cameraBuffer;
@@ -32,7 +31,9 @@ public class RayTracer {
     public RayTracer(RenderConfig config) {
         this.config = config;
 
-        arrayTexture = new ArrayTexture(new Texture[]{new Texture("src/main/resources/textures/bricks/diffuse.png")}, 0);
+        arrayTextureDiffuse = new ArrayTexture(new Texture[]{new Texture("src/main/resources/textures/bricks/diffuse.png")}, 0);
+        arrayTextureNormal = new ArrayTexture(new Texture[]{new Texture("src/main/resources/textures/bricks/normal.png")}, 1);
+
         screenQuad = new ScreenQuad();
         textureShader = new TextureShader();
         rayTracerCompute = new RayTracerCompute();
@@ -138,8 +139,8 @@ public class RayTracer {
 //        );
 
         try {
-            Mesh triangle = Mesh.load("src/main/resources/triangle.obj", 0);
-            triangle.transform(new Vector3f(0, 0, -5), new Vector3f(0, 0, 0), new Vector3f(1));
+            Mesh triangle = Mesh.load("src/main/resources/cube.obj", 0);
+            triangle.transform(new Vector3f(0, 0, -5), new Vector3f(0.5f, 0.5f, 0), new Vector3f(1));
             objectsBuffer = new ObjectsBuffer(new Mesh[]{triangle});
         } catch (IOException e) {
             throw new RuntimeException("Failed to load mesh", e);
@@ -183,11 +184,13 @@ public class RayTracer {
         objectsBuffer.bind();
         spheresBuffer.bind();
         cameraBuffer.bind();
-        arrayTexture.bind();
+        arrayTextureDiffuse.bind();
+        arrayTextureNormal.bind();
         screenTexture.bindWrite();
         rayTracerCompute.compute(config.quality().width(), config.quality().height(), objectsBuffer.numObjects(), spheresBuffer.numSpheres(), clock.getFrameCount(), config.quality().bounces());
         screenTexture.unbindWrite();
-        arrayTexture.bind();
+        arrayTextureNormal.unbind();
+        arrayTextureDiffuse.bind();
         cameraBuffer.unbind();
         spheresBuffer.unbind();
         objectsBuffer.unbind();

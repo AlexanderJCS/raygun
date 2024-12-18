@@ -37,6 +37,8 @@ public class RayTracerCompute {
         glUniform1i(glGetUniformLocation(program, "num_spheres"), numSpheres);
         glUniform1i(glGetUniformLocation(program, "frame_counter"), frameCounter);
         glUniform1i(glGetUniformLocation(program, "max_bounces"), maxBounces);
+        glUniform1i(glGetUniformLocation(program, "texture_diffuse"), 0);
+        glUniform1i(glGetUniformLocation(program, "texture_normals"), 1);
 
         glDispatchCompute((int) Math.ceil(width / 8f), (int) Math.ceil(height / 4f), 1);
         glMemoryBarrier(GL_ALL_BARRIER_BITS);

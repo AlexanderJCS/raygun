@@ -60,7 +60,8 @@ uniform int num_spheres;
 uniform int frame_counter;
 uniform int max_bounces;
 
-uniform sampler2DArray textures;
+uniform sampler2DArray texture_diffuse;
+uniform sampler2DArray texture_normals;
 
 struct HitRecord {
     vec3 p;
@@ -69,6 +70,8 @@ struct HitRecord {
     int material_id;
     bool front_face;
     vec2 uv;
+    vec3 tangent;
+    vec3 bitangent;
 };
 
 struct Ray {
@@ -301,6 +304,20 @@ bool hit_triangle(vec3 v0, vec3 v1, vec3 v2, Ray ray, float ray_tmin, float ray_
     rec.normal = normalize(cross(edge1, edge2));
     set_face_normal(ray, rec.normal, rec);
 
+    vec2 delta_uv1 = objects[0].tex_coords[objects[0].tex_indices[0].y] - objects[0].tex_coords[objects[0].tex_indices[0].x];
+    vec2 delta_uv2 = objects[0].tex_coords[objects[0].tex_indices[0].z] - objects[0].tex_coords[objects[0].tex_indices[0].x];
+
+    float f = 1 / (delta_uv1.x * delta_uv2.y - delta_uv2.x * delta_uv1.y);
+    vec3 tangent = f * (delta_uv2.y * edge1 - delta_uv1.y * edge2);
+    vec3 bitangent = f * (-delta_uv2.x * edge1 + delta_uv1.x * edge2);
+
+    rec.tangent = normalize(tangent);
+    rec.bitangent = normalize(bitangent);
+
+    // ensure the tangent space basis is orthagonal
+    rec.tangent = normalize(rec.tangent - dot(rec.tangent, rec.normal) * rec.normal);
+    rec.bitangent = cross(rec.normal, rec.tangent);
+
     return true;
 }
 
@@ -409,21 +426,29 @@ float reflectance(float cosine, float ref_idx) {
 }
 
 
+vec3 calc_normal(vec3 material_normal, vec3 tangent, vec3 bitangent, vec3 normal) {
+    return normalize(material_normal.x * tangent + material_normal.y * bitangent + material_normal.z * normal);
+}
+
+
 bool material_scatter(int material_id, Ray r_in, HitRecord rec, inout Ray scattered, inout vec3 attenuation) {
     Material material = materials[material_id];
-    vec3 texture_color = material.texture_id == -1 ? material.albedo : texture(textures, vec3(rec.uv, material.texture_id)).xyz;
+    vec3 texture_color = material.texture_id == -1 ? material.albedo : texture(texture_diffuse, vec3(rec.uv, material.texture_id)).xyz;
+    vec3 texture_normal = texture(texture_normals, vec3(rec.uv, material.texture_id)).xyz;
+    texture_normal = texture_normal * 2 - 1;
+    vec3 normal = calc_normal(texture_normal, rec.tangent, rec.bitangent, rec.normal);
 
     if (material.type == 0) {
         // diffuse
         scattered.origin = rec.p;
-        scattered.direction = rec.normal + random_unit_vec();
+        scattered.direction = normal + random_unit_vec();
 
-        attenuation = texture_color;
+        attenuation = normal * 0.5 + 0.5;
 
         return true;
     } else if (material.type == 1) {
         // metal
-        vec3 reflected = reflect(r_in.direction, rec.normal);
+        vec3 reflected = reflect(r_in.direction, normal);
 
         if (random() > material.specular_prob) {
             reflected += material.fuzz_or_ref_idx * random_unit_vec();
@@ -436,12 +461,12 @@ bool material_scatter(int material_id, Ray r_in, HitRecord rec, inout Ray scatte
         scattered.origin = rec.p;
         scattered.direction = reflected;
 
-        return dot(scattered.direction, rec.normal) > 0;
+        return dot(scattered.direction, normal) > 0;
     } else if (material.type == 2) {
         // glass
         float ri = rec.front_face ? 1.0 / material.fuzz_or_ref_idx : material.fuzz_or_ref_idx;
         vec3 unit_direction = normalize(r_in.direction);
-        float cos_theta = min(dot(-unit_direction, rec.normal), 1.0);
+        float cos_theta = min(dot(-unit_direction, normal), 1.0);
         float sin_theta = sqrt(1.0 - cos_theta * cos_theta);
 
         bool cannot_refract = ri * sin_theta > 1.0;
@@ -449,10 +474,10 @@ bool material_scatter(int material_id, Ray r_in, HitRecord rec, inout Ray scatte
 
         float reflectance = reflectance(cos_theta, ri);
         if (cannot_refract || reflectance > random()) {
-            direction = reflect(unit_direction, rec.normal);
+            direction = reflect(unit_direction, normal);
             attenuation = vec3(1);
         } else {
-            direction = refract(unit_direction, rec.normal, ri);
+            direction = refract(unit_direction, normal, ri);
             attenuation = mix(texture_color, vec3(1), reflectance);  // blend based on Fresnel effect
         }
 
