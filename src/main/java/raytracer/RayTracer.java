@@ -159,22 +159,22 @@ public class RayTracer {
                         new Vector3f(0),
                         new Vector3f(0)
                 },
-                new float[]{0, 1f, 0, 0},
+                new float[]{0, 10f, 0, 0},
                 new int[]{0, 0, 1, 1},
                 new float[]{0.9f, 0, 0f, 0.8f},
                 new float[]{0, 0, 0.4f, 0},
-                new int[]{0, 0, 0, 0}
+                new int[]{0, -1, 0, 0}
         );
 
         spheresBuffer = new SpheresBuffer(
                 new Vector3f[]{
-//                        new Vector3f(0, -0.5f, -2f)
+                        new Vector3f(0, 1f, -2f)
                 },
                 new float[]{
-//                        0.5f
+                        0.5f
                 },
                 new int[]{
-//                        2
+                        1
                 }
         );
     }
