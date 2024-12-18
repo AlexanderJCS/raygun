@@ -24,6 +24,7 @@ public class RayTracer {
     private final SpheresBuffer spheresBuffer;
     private final ArrayTexture arrayTextureDiffuse;
     private final ArrayTexture arrayTextureNormal;
+    private final ArrayTexture arrayTextureParallax;
 
     private final RenderConfig config;
     private final CameraBuffer cameraBuffer;
@@ -31,8 +32,9 @@ public class RayTracer {
     public RayTracer(RenderConfig config) {
         this.config = config;
 
-        arrayTextureDiffuse = new ArrayTexture(new Texture[]{new Texture("src/main/resources/textures/bricks/diffuse.png")}, 0);
-        arrayTextureNormal = new ArrayTexture(new Texture[]{new Texture("src/main/resources/textures/bricks/normal.png")}, 1);
+        arrayTextureDiffuse = new ArrayTexture(new Texture[]{new Texture("src/main/resources/textures/toybox/diffuse.png")}, 0);
+        arrayTextureNormal = new ArrayTexture(new Texture[]{new Texture("src/main/resources/textures/toybox/normal.png")}, 1);
+        arrayTextureParallax = new ArrayTexture(new Texture[]{new Texture("src/main/resources/textures/toybox/parallax.png")}, 2);
 
         screenQuad = new ScreenQuad();
         textureShader = new TextureShader();
@@ -139,9 +141,9 @@ public class RayTracer {
 //        );
 
         try {
-            Mesh triangle = Mesh.load("src/main/resources/cube.obj", 0);
-            triangle.transform(new Vector3f(0, 0, -5), new Vector3f(0.5f, 0.5f, 0), new Vector3f(1));
-            objectsBuffer = new ObjectsBuffer(new Mesh[]{triangle});
+            Mesh cube = Mesh.load("src/main/resources/quad.obj", 0);
+            cube.transform(new Vector3f(0, 0, -5), new Vector3f(0.5f, 0.5f, 0), new Vector3f(1));
+            objectsBuffer = new ObjectsBuffer(new Mesh[]{cube});
         } catch (IOException e) {
             throw new RuntimeException("Failed to load mesh", e);
         }
@@ -186,9 +188,11 @@ public class RayTracer {
         cameraBuffer.bind();
         arrayTextureDiffuse.bind();
         arrayTextureNormal.bind();
+        arrayTextureParallax.bind();
         screenTexture.bindWrite();
         rayTracerCompute.compute(config.quality().width(), config.quality().height(), objectsBuffer.numObjects(), spheresBuffer.numSpheres(), clock.getFrameCount(), config.quality().bounces());
         screenTexture.unbindWrite();
+        arrayTextureParallax.unbind();
         arrayTextureNormal.unbind();
         arrayTextureDiffuse.bind();
         cameraBuffer.unbind();
@@ -228,6 +232,9 @@ public class RayTracer {
     }
 
     public void cleanup() {
+        arrayTextureNormal.cleanup();
+        arrayTextureDiffuse.cleanup();
+        arrayTextureParallax.cleanup();
         cameraBuffer.cleanup();
         spheresBuffer.cleanup();
         screenQuad.cleanup();

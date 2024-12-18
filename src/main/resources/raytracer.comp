@@ -62,6 +62,7 @@ uniform int max_bounces;
 
 uniform sampler2DArray texture_diffuse;
 uniform sampler2DArray texture_normals;
+uniform sampler2DArray texture_parallax;
 
 struct HitRecord {
     vec3 p;
@@ -431,9 +432,42 @@ vec3 calc_normal(vec3 material_normal, vec3 tangent, vec3 bitangent, vec3 normal
 }
 
 
+vec2 parallax_mapping(vec2 uv, vec3 view_dir, int texture_id) {
+    float height_scale = 1;
+    const float layers = 10;
+    float layer_depth = 1 / layers;
+    float current_layer_depth = 0;
+
+    // the amount to shift the texture coordinates per layer (from vector P)
+    vec2 p = view_dir.xy * height_scale;
+    vec2 delta_uv = p / layers;
+
+    vec2 current_uv = uv;
+    float current_depth = texture(texture_parallax, vec3(current_uv, texture_id)).r;
+
+    while (current_layer_depth < current_depth) {
+        current_uv -= delta_uv;
+        current_depth = texture(texture_parallax, vec3(current_uv, texture_id)).r;
+        current_layer_depth += layer_depth;
+    }
+
+    vec2 prev_uv = current_uv + delta_uv;
+    float after_depth = current_depth - current_layer_depth;
+    float before_depth = texture(texture_parallax, vec3(prev_uv, texture_id)).r - current_layer_depth + layer_depth;
+    float weight = after_depth / (after_depth - before_depth);
+
+    return mix(prev_uv, current_uv, weight);
+}
+
+
 bool material_scatter(int material_id, Ray r_in, HitRecord rec, inout Ray scattered, inout vec3 attenuation) {
     Material material = materials[material_id];
-    vec3 texture_color = material.texture_id == -1 ? material.albedo : texture(texture_diffuse, vec3(rec.uv, material.texture_id)).xyz;
+    vec3 texture_color = material.albedo;
+
+    if (material.texture_id != -1) {
+        vec2 parallax_uv = parallax_mapping(rec.uv, r_in.direction, material.texture_id);
+        texture_color = texture(texture_diffuse, vec3(parallax_uv, material.texture_id)).xyz;
+    }
 
     vec3 normal = rec.normal;
 
@@ -448,7 +482,7 @@ bool material_scatter(int material_id, Ray r_in, HitRecord rec, inout Ray scatte
         scattered.origin = rec.p;
         scattered.direction = normal + random_unit_vec();
 
-        attenuation = texture_color;
+        attenuation = texture(texture_parallax, vec3(rec.uv, material.texture_id)).xyz;
 
         return true;
     } else if (material.type == 1) {
