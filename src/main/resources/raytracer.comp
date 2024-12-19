@@ -233,7 +233,8 @@ bool hit_bounding_box(vec3 aabb_min, vec3 aabb_max, Ray ray) {
 
 
 vec2 uv_from_triangle(vec2 uv0, vec2 uv1, vec2 uv2, vec3 barycentric) {
-    return barycentric.x * uv0 + barycentric.y * uv1 + barycentric.z * uv2;
+    vec2 uv = barycentric.x * uv0 + barycentric.y * uv1 + barycentric.z * uv2;
+    return vec2(uv.x, 1 - uv.y);
 }
 
 vec3 tri_barycentric(vec3 p, vec3 a, vec3 b, vec3 c) {
@@ -442,7 +443,7 @@ vec2 parallax_mapping(vec2 uv, vec3 view_dir, int texture_id) {
     const float max_layers = 32;
     float layers = mix(max_layers, min_layers, max(dot(vec3(0.0, 0.0, 1.0), view_dir), 0.0));
 
-    float height_scale = 1;
+    float height_scale = 0.1;
     float layer_depth = 1 / layers;
     float current_layer_depth = 0;
 
@@ -453,7 +454,7 @@ vec2 parallax_mapping(vec2 uv, vec3 view_dir, int texture_id) {
     float current_parallax_value = texture(texture_parallax, vec3(current_uv, texture_id)).r;
 
     int iterations = 0;  // prevent infinite loops
-    while (current_layer_depth < current_parallax_value && iterations < 256) {
+    while (current_layer_depth < current_parallax_value && iterations < 64) {
         current_uv -= delta_uv;
         current_parallax_value = texture(texture_parallax, vec3(current_uv, texture_id)).r;
         current_layer_depth += layer_depth;
@@ -476,9 +477,10 @@ bool material_scatter(int material_id, Ray r_in, HitRecord rec, inout Ray scatte
     vec2 uv = rec.uv;
     if (material.texture_id != -1) {
         mat3 tbn = mat3(normalize(rec.tangent), normalize(rec.bitangent), normalize(rec.normal));
-        uv = parallax_mapping(rec.uv, tbn * normalize(normalize(-r_in.direction)), material.texture_id);
+        uv = parallax_mapping(rec.uv, normalize(tbn * normalize(-r_in.direction)), material.texture_id);
         uv = clamp(uv, vec2(0), vec2(1));  // todo: discard all fragments outside of the texture
-        texture_color = vec3(uv, 0);
+//        texture_color = normalize(tbn * normalize(-r_in.direction)) * 0.5 + 0.5;
+        texture_color = texture(texture_diffuse, vec3(uv, material.texture_id)).xyz;
     }
 
     vec3 normal = rec.normal;

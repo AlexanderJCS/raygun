@@ -142,7 +142,7 @@ public class RayTracer {
 
         try {
             Mesh cube = Mesh.load("src/main/resources/quad.obj", 0);
-            cube.transform(new Vector3f(0, 0, -2), new Vector3f(0, 1f, 0), new Vector3f(1));
+            cube.transform(new Vector3f(0, 0, -2), new Vector3f(0, 0f, 0), new Vector3f(1));
             objectsBuffer = new ObjectsBuffer(new Mesh[]{cube});
         } catch (IOException e) {
             throw new RuntimeException("Failed to load mesh", e);
