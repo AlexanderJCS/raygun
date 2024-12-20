@@ -459,16 +459,13 @@ vec2 parallax_mapping(vec2 uv, vec3 view_dir, int texture_id) {
         current_layer_depth += layer_depth;
     }
 
-    // get texture coordinates before collision (reverse operations)
-    vec2 prevTexCoords = current_uv + delta_uv;
+    vec2 prev_uv = current_uv + delta_uv;
 
-    // get depth after and before collision for linear interpolation
-    float afterDepth  = current_depth_map_value - current_layer_depth;
-    float beforeDepth = texture(texture_parallax, vec3(prevTexCoords, texture_id)).r - current_layer_depth + layer_depth;
+    float after_depth = current_depth_map_value - current_layer_depth;
+    float before_depth = texture(texture_parallax, vec3(prev_uv, texture_id)).r - current_layer_depth + layer_depth;
 
-    // interpolation of texture coordinates
-    float weight = afterDepth / (afterDepth - beforeDepth);
-    return mix(prevTexCoords, current_uv, weight);
+    float weight = after_depth / (after_depth - before_depth);
+    return mix(prev_uv, current_uv, weight);
 }
 
 
@@ -478,13 +475,9 @@ bool material_scatter(int material_id, Ray r_in, HitRecord rec, inout Ray scatte
 
     vec2 uv = rec.uv;
     if (material.texture_id != -1) {
-        vec3 tangent = normalize(rec.tangent);
-        vec3 normal = normalize(rec.normal);
-        vec3 bitangent = normalize(cross(normal, tangent));
-        mat3 tbn = mat3(tangent, bitangent, normal);
-
+        mat3 tbn = mat3(rec.tangent, rec.bitangent, rec.normal);
         vec3 view_dir_tangent = normalize(tbn * -normalize(r_in.direction));
-        view_dir_tangent.z = max(view_dir_tangent.z, 0.001); // Avoid extreme scaling
+
         uv = parallax_mapping(rec.uv, view_dir_tangent, material.texture_id);
 
         if (uv.x < 0 || uv.y < 0 || uv.x > 1 || uv.y > 1) {
