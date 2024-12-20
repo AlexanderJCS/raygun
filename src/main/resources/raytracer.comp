@@ -234,7 +234,7 @@ bool hit_bounding_box(vec3 aabb_min, vec3 aabb_max, Ray ray) {
 
 vec2 uv_from_triangle(vec2 uv0, vec2 uv1, vec2 uv2, vec3 barycentric) {
     vec2 uv = barycentric.x * uv0 + barycentric.y * uv1 + barycentric.z * uv2;
-    return vec2(uv.x, 1 - uv.y);
+    return vec2(uv.x, uv.y);
 }
 
 vec3 tri_barycentric(vec3 p, vec3 a, vec3 b, vec3 c) {
@@ -438,11 +438,44 @@ vec3 calc_normal(vec3 material_normal, vec3 tangent, vec3 bitangent, vec3 normal
 }
 
 
+//vec2 parallax_mapping(vec2 uv, vec3 view_dir, int texture_id) {
+//    const float height_scale = 0.1;
+//    float height = texture(texture_parallax, vec3(uv, texture_id)).r;
+//    vec2 p = view_dir.xy / view_dir.z * (height * height_scale);
+//    return uv - p;
+//}
+
 vec2 parallax_mapping(vec2 uv, vec3 view_dir, int texture_id) {
-    const float scale = 0.05;
-    float height = texture(texture_parallax, vec3(uv, texture_id)).r;
-    vec2 p = view_dir.xy / view_dir.z * height * scale;
-    return uv - p;
+    view_dir.x *= -1;
+
+    const float height_scale = 0.1;
+    const float min_layers = 16;
+    const float max_layers = 64;
+    float num_layers = mix(max_layers, min_layers, max(dot(vec3(0.0, 0.0, 1.0), view_dir), 0.0));
+    float layer_depth = 1 / num_layers;
+    float current_layer_depth = 0;
+    vec2 p = view_dir.xy * height_scale;
+    vec2 delta_uv = p / num_layers;
+
+    vec2 current_uv = uv;
+    float current_depth_map_value = texture(texture_parallax, vec3(current_uv, texture_id)).r;
+
+    while (current_layer_depth < current_depth_map_value) {
+        current_uv -= delta_uv;
+        current_depth_map_value = texture(texture_parallax, vec3(current_uv, texture_id)).r;
+        current_layer_depth += layer_depth;
+    }
+
+    // get texture coordinates before collision (reverse operations)
+    vec2 prevTexCoords = current_uv + delta_uv;
+
+    // get depth after and before collision for linear interpolation
+    float afterDepth  = current_depth_map_value - current_layer_depth;
+    float beforeDepth = texture(texture_parallax, vec3(prevTexCoords, texture_id)).r - current_layer_depth + layer_depth;
+
+    // interpolation of texture coordinates
+    float weight = afterDepth / (afterDepth - beforeDepth);
+    return mix(prevTexCoords, current_uv, weight);
 }
 
 
@@ -460,22 +493,18 @@ bool material_scatter(int material_id, Ray r_in, HitRecord rec, inout Ray scatte
         vec3 view_dir_tangent = normalize(tbn * -normalize(r_in.direction));
         view_dir_tangent.z = max(view_dir_tangent.z, 0.001); // Avoid extreme scaling
         uv = parallax_mapping(rec.uv, view_dir_tangent, material.texture_id);
-//        uv = clamp(uv, vec2(0), vec2(1));  // todo: discard all fragments outside of the texture
-
-        texture_color = vec3(uv * 0.5 + 0.5, 0);
 
         if (uv.x < 0 || uv.y < 0 || uv.x > 1 || uv.y > 1) {
-            texture_color = vec3(0);
+            texture_color = vec3(0);  // todo: handle this better
         } else {
             texture_color = texture(texture_diffuse, vec3(uv, material.texture_id)).xyz;
-//            texture_color = view_dir_tangent * 0.5 + 0.5;
         }
     }
 
     vec3 normal = rec.normal;
 
     if (material.texture_id != -1) {
-        vec3 texture_normal = texture(texture_normals, vec3(rec.uv, material.texture_id)).xyz;
+        vec3 texture_normal = texture(texture_normals, vec3(uv, material.texture_id)).xyz;
         texture_normal = texture_normal * 2 - 1;
         normal = calc_normal(texture_normal, rec.tangent, rec.bitangent, rec.normal);
     }
