@@ -3,6 +3,8 @@
 #define MAX_COUNT 50
 #define MAX_TRIANGLES 2000
 
+#define PI 3.14159265359
+
 layout(local_size_x = 8, local_size_y = 4, local_size_z = 1) in;
 layout(rgba32f, binding = 0) uniform image2D screen;
 
@@ -352,6 +354,13 @@ bool hit_sphere(int sphere_idx, Ray ray, float ray_tmin, float ray_tmax, inout H
     rec.material_id = sphere.material_id;
     vec3 outward_normal = (rec.p - sphere.center) / sphere.radius;
     set_face_normal(ray, outward_normal, rec);
+
+    float theta = acos(-dot(outward_normal, vec3(0, 1, 0)));
+    float phi = atan(outward_normal.z, outward_normal.x) + PI;
+
+    rec.uv = vec2(phi / (2 * PI), theta / PI);
+    rec.tangent = normalize(vec3(-sin(phi), 0, cos(phi)));
+    rec.bitangent = normalize(vec3(cos(phi) * sin(theta), -cos(theta), sin(phi) * sin(theta)));
 
     return true;
 }
