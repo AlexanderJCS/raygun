@@ -438,13 +438,6 @@ vec3 calc_normal(vec3 material_normal, vec3 tangent, vec3 bitangent, vec3 normal
 }
 
 
-//vec2 parallax_mapping(vec2 uv, vec3 view_dir, int texture_id) {
-//    const float height_scale = 0.1;
-//    float height = texture(texture_parallax, vec3(uv, texture_id)).r;
-//    vec2 p = view_dir.xy / view_dir.z * (height * height_scale);
-//    return uv - p;
-//}
-
 vec2 parallax_mapping(vec2 uv, vec3 view_dir, int texture_id) {
     view_dir.x *= -1;
 
