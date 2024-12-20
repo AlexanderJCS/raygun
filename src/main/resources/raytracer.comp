@@ -75,6 +75,7 @@ struct HitRecord {
     vec2 uv;
     vec3 tangent;
     vec3 bitangent;
+    bool triangle_hit;  // true if it hit a triangle, false if it hit a sphere
 };
 
 struct Ray {
@@ -322,6 +323,8 @@ bool hit_triangle(vec3 v0, vec3 v1, vec3 v2, vec2 uv0, vec2 uv1, vec2 uv2, Ray r
     rec.tangent = normalize(rec.tangent - dot(rec.tangent, rec.normal) * rec.normal);
     rec.bitangent = cross(rec.normal, rec.tangent);
 
+    rec.triangle_hit = true;
+
     return true;
 }
 
@@ -354,7 +357,9 @@ bool hit_sphere(int sphere_idx, Ray ray, float ray_tmin, float ray_tmax, inout H
     rec.material_id = sphere.material_id;
     vec3 outward_normal = (rec.p - sphere.center) / sphere.radius;
     set_face_normal(ray, outward_normal, rec);
+    rec.triangle_hit = false;
 
+    // todo: optimize this code by reducing trig computations
     float theta = acos(-dot(outward_normal, vec3(0, 1, 0)));
     float phi = atan(outward_normal.z, outward_normal.x) + PI;
 
@@ -448,9 +453,7 @@ vec3 calc_normal(vec3 material_normal, vec3 tangent, vec3 bitangent, vec3 normal
 
 
 vec2 parallax_mapping(vec2 uv, vec3 view_dir, int texture_id) {
-    view_dir.x *= -1;  // no idea why i need to do this but it doesn't work without it
-
-    const float height_scale = 0.1;
+    const float height_scale = 0.05;
     const float min_layers = 16;
     const float max_layers = 64;
     float num_layers = mix(max_layers, min_layers, max(dot(vec3(0.0, 0.0, 1.0), view_dir), 0.0));
@@ -494,6 +497,11 @@ ScatterResult material_scatter(int material_id, Ray r_in, HitRecord rec) {
     if (material.texture_id != -1) {
         mat3 tbn = mat3(rec.tangent, rec.bitangent, rec.normal);
         vec3 view_dir_tangent = normalize(tbn * -normalize(r_in.direction));
+
+        // flip the view direction on the x axis if it's a triangle that's hit
+        // flip the view direction on the y axis if it's a sphere that's hit
+        // i have no idea why this needs to be different, but it works
+        view_dir_tangent *= rec.triangle_hit ? vec3(-1, 1, 1) : vec3(1, -1, 1);
 
         uv = parallax_mapping(rec.uv, view_dir_tangent, material.texture_id);
 
@@ -599,7 +607,7 @@ vec3 ray_color(Ray r) {
             // If the ray misses, add the background contribution
             vec3 unit_direction = normalize(r.direction);
             float t = 0.5 * (unit_direction.y + 1.0);
-            vec3 background = mix(vec3(1), vec3(0.5, 0.7, 1), t); // Example gradient background
+            vec3 background = mix(vec3(1), vec3(0.5, 0.7, 1), t);
 //            vec3 background = vec3(0);
             incomingLight += color * background;
             break;

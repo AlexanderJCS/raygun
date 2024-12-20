@@ -142,7 +142,7 @@ public class RayTracer {
 
         try {
             Mesh cube = Mesh.load("src/main/resources/quad.obj", 0);
-            cube.transform(new Vector3f(0, 0, -2), new Vector3f(0, 1f, 0), new Vector3f(1f));
+            cube.transform(new Vector3f(0, 0, -4), new Vector3f(0, 1f, 0), new Vector3f(1f));
             objectsBuffer = new ObjectsBuffer(new Mesh[]{cube});
         } catch (IOException e) {
             throw new RuntimeException("Failed to load mesh", e);
@@ -158,22 +158,22 @@ public class RayTracer {
                 new Vector3f[]{
                         new Vector3f(0),
                         new Vector3f(0.8f, 0.8f, 0.9f),
-                        new Vector3f(0),
+                        new Vector3f(0.8f),
                         new Vector3f(0)
                 },
-                new float[]{0, 20f, 0, 0},
-                new int[]{0, 0, 1, 1},
+                new float[]{0, 0, 10f, 0},
+                new int[]{0, 0, 0, 1},
                 new float[]{0.9f, 0, 0f, 0.8f},
                 new float[]{0, 0, 0.4f, 0},
-                new int[]{0, -1, 0, 0}
+                new int[]{0, 0, 0, 0}
         );
 
         spheresBuffer = new SpheresBuffer(
                 new Vector3f[]{
-                        new Vector3f(2f, 3f, 1f)
+                        new Vector3f(0, 0, -2)
                 },
                 new float[]{
-                        1f
+                        1
                 },
                 new int[]{
                         1
