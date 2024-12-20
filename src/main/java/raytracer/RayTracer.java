@@ -32,9 +32,9 @@ public class RayTracer {
     public RayTracer(RenderConfig config) {
         this.config = config;
 
-        arrayTextureDiffuse = new ArrayTexture(new Texture[]{new Texture("src/main/resources/textures/toybox/diffuse.png")}, 0);
-        arrayTextureNormal = new ArrayTexture(new Texture[]{new Texture("src/main/resources/textures/toybox/normal.png")}, 1);
-        arrayTextureParallax = new ArrayTexture(new Texture[]{new Texture("src/main/resources/textures/toybox/parallax.png")}, 2);
+        arrayTextureDiffuse = new ArrayTexture(new Texture[]{new Texture("src/main/resources/textures/bricks2/diffuse.png")}, 0);
+        arrayTextureNormal = new ArrayTexture(new Texture[]{new Texture("src/main/resources/textures/bricks2/normal.png")}, 1);
+        arrayTextureParallax = new ArrayTexture(new Texture[]{new Texture("src/main/resources/textures/bricks2/parallax.png")}, 2);
 
         screenQuad = new ScreenQuad();
         textureShader = new TextureShader();
