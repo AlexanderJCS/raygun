@@ -469,7 +469,15 @@ vec2 parallax_mapping(vec2 uv, vec3 view_dir, int texture_id) {
 }
 
 
-bool material_scatter(int material_id, Ray r_in, HitRecord rec, inout Ray scattered, inout vec3 attenuation) {
+struct ScatterResult {
+    bool did_scatter;
+    Ray scattered;
+    vec3 attenuation;
+};
+
+
+
+ScatterResult material_scatter(int material_id, Ray r_in, HitRecord rec) {
     Material material = materials[material_id];
     vec3 texture_color = material.albedo;
 
@@ -482,10 +490,7 @@ bool material_scatter(int material_id, Ray r_in, HitRecord rec, inout Ray scatte
 
         if (uv.x < 0 || uv.y < 0 || uv.x > 1 || uv.y > 1) {
             // effectively discard the pixel if the texture coordinates are out of bounds
-            scattered.origin = rec.p + r_in.direction * 0.001;  // avoid self-intersection
-            scattered.direction = r_in.direction;  // go past the object
-            attenuation = vec3(1);
-            return true;  // did not intersect
+            return ScatterResult(true, Ray(rec.p + r_in.direction * 0.001, r_in.direction), vec3(1));
         } else {
             texture_color = texture(texture_diffuse, vec3(uv, material.texture_id)).xyz;
         }
@@ -501,17 +506,15 @@ bool material_scatter(int material_id, Ray r_in, HitRecord rec, inout Ray scatte
 
     if (material.type == 0) {
         // diffuse
-        scattered.origin = rec.p;
-        scattered.direction = normal + random_unit_vec();
-
-        attenuation = texture_color;
-
-        return true;
+        Ray scattered = Ray(rec.p, normal + random_unit_vec());
+        return ScatterResult(true, scattered, texture_color);
     } else if (material.type == 1) {
         // metal
         vec3 reflected = reflect(r_in.direction, normal);
 
+        vec3 attenuation;
         if (random() > material.specular_prob) {
+            // non-specular reflection
             reflected += material.fuzz_or_ref_idx * random_unit_vec();
             attenuation = texture_color;
         } else {
@@ -519,36 +522,36 @@ bool material_scatter(int material_id, Ray r_in, HitRecord rec, inout Ray scatte
             attenuation = vec3(1);
         }
 
-        scattered.origin = rec.p;
-        scattered.direction = reflected;
-
-        return dot(scattered.direction, normal) > 0;
+        Ray scattered = Ray(rec.p, reflected);
+        return ScatterResult(dot(scattered.direction, normal) > 0, scattered, attenuation);
     } else if (material.type == 2) {
-        // glass
+        // dielectric
         float ri = rec.front_face ? 1.0 / material.fuzz_or_ref_idx : material.fuzz_or_ref_idx;
         vec3 unit_direction = normalize(r_in.direction);
         float cos_theta = min(dot(-unit_direction, normal), 1.0);
         float sin_theta = sqrt(1.0 - cos_theta * cos_theta);
 
         bool cannot_refract = ri * sin_theta > 1.0;
-        vec3 direction;
-
         float reflectance = reflectance(cos_theta, ri);
+
+        vec3 direction;
+        vec3 attenuation;
         if (cannot_refract || reflectance > random()) {
+            // specular reflect
             direction = reflect(unit_direction, normal);
             attenuation = vec3(1);
         } else {
+            // refract
             direction = refract(unit_direction, normal, ri);
             attenuation = mix(texture_color, vec3(1), reflectance);  // blend based on Fresnel effect
         }
 
-        scattered.origin = rec.p;
-        scattered.direction = direction;
+        Ray scattered = Ray(rec.p, direction);
 
-        return true;
+        return ScatterResult(true, scattered, attenuation);
     }
 
-    return false;
+    return ScatterResult(false, Ray(vec3(0), vec3(0)), vec3(0));
 }
 
 
@@ -565,12 +568,11 @@ vec3 ray_color(Ray r) {
             // Add emitted light scaled by accumulated attenuation
             incomingLight += emittedLight * color;
 
-            Ray scattered;
-            vec3 attenuation;
-            if (material_scatter(rec.material_id, r, rec, scattered, attenuation)) {
+            ScatterResult scatter_result = material_scatter(rec.material_id, r, rec);
+            if (scatter_result.did_scatter) {
                 // Update ray and cumulative color
-                r = scattered;
-                color *= clamp(attenuation, vec3(0), vec3(1));
+                r = scatter_result.scattered;
+                color *= clamp(scatter_result.attenuation, vec3(0), vec3(1));
             } else {
                 // Stop bouncing if the material does not scatter
                 break;
