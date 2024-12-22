@@ -516,6 +516,57 @@ vec3 texture_normal(HitRecord rec, vec2 uv, int texture_id) {
 }
 
 
+ScatterResult scatter_diffuse(Ray r_in, HitRecord rec, vec3 normal, vec3 tex_color) {
+    Ray scattered = Ray(rec.p, normal + random_unit_vec());
+    return ScatterResult(true, scattered, tex_color);
+}
+
+
+ScatterResult scatter_metal(Ray r_in, HitRecord rec, Material material, vec3 normal, vec3 tex_color) {
+    vec3 reflected = reflect(r_in.direction, normal);
+
+    vec3 attenuation;
+    if (random() > material.specular_prob) {
+        // non-specular reflection
+        reflected += material.fuzz_or_ref_idx * random_unit_vec();
+        attenuation = tex_color;
+    } else {
+        // specular reflection
+        attenuation = vec3(1);
+    }
+
+    Ray scattered = Ray(rec.p, reflected);
+    return ScatterResult(dot(scattered.direction, normal) > 0, scattered, attenuation);
+}
+
+
+ScatterResult scatter_dielectric(Ray r_in, HitRecord rec, Material material, vec3 normal, vec3 tex_color) {
+    float ri = rec.front_face ? 1.0 / material.fuzz_or_ref_idx : material.fuzz_or_ref_idx;
+    vec3 unit_direction = normalize(r_in.direction);
+    float cos_theta = min(dot(-unit_direction, normal), 1.0);
+    float sin_theta = sqrt(1.0 - cos_theta * cos_theta);
+
+    bool cannot_refract = ri * sin_theta > 1.0;
+    float reflectance = reflectance(cos_theta, ri);
+
+    vec3 direction;
+    vec3 attenuation;
+    if (cannot_refract || reflectance > random()) {
+        // specular reflect
+        direction = reflect(unit_direction, normal);
+        attenuation = vec3(1);
+    } else {
+        // refract
+        direction = refract(unit_direction, normal, ri);
+        attenuation = mix(tex_color, vec3(1), reflectance);  // blend based on Fresnel effect
+    }
+
+    Ray scattered = Ray(rec.p, direction);
+
+    return ScatterResult(true, scattered, attenuation);
+}
+
+
 ScatterResult material_scatter(int material_id, Ray r_in, HitRecord rec) {
     Material material = materials[material_id];
     vec3 texture_color = material.albedo;
@@ -531,57 +582,13 @@ ScatterResult material_scatter(int material_id, Ray r_in, HitRecord rec) {
 
     vec3 normal = texture_normal(rec, uv, material.texture_id);
 
-    if (material.texture_id != -1) {
-        vec3 texture_normal = texture(texture_normals, vec3(uv, material.texture_id)).xyz;
-        texture_normal = texture_normal * 2 - 1;
-        normal = calc_normal(texture_normal, rec.tangent, rec.bitangent, rec.normal);
-    }
-
     if (material.type == 0) {
-        // diffuse
-        Ray scattered = Ray(rec.p, normal + random_unit_vec());
-        return ScatterResult(true, scattered, texture_color);
+        return scatter_diffuse(r_in, rec, normal, texture_color);
     } else if (material.type == 1) {
-        // metal
-        vec3 reflected = reflect(r_in.direction, normal);
-
-        vec3 attenuation;
-        if (random() > material.specular_prob) {
-            // non-specular reflection
-            reflected += material.fuzz_or_ref_idx * random_unit_vec();
-            attenuation = texture_color;
-        } else {
-            // specular reflection
-            attenuation = vec3(1);
-        }
-
-        Ray scattered = Ray(rec.p, reflected);
-        return ScatterResult(dot(scattered.direction, normal) > 0, scattered, attenuation);
+        return scatter_metal(r_in, rec, material, normal, texture_color);
     } else if (material.type == 2) {
         // dielectric
-        float ri = rec.front_face ? 1.0 / material.fuzz_or_ref_idx : material.fuzz_or_ref_idx;
-        vec3 unit_direction = normalize(r_in.direction);
-        float cos_theta = min(dot(-unit_direction, normal), 1.0);
-        float sin_theta = sqrt(1.0 - cos_theta * cos_theta);
-
-        bool cannot_refract = ri * sin_theta > 1.0;
-        float reflectance = reflectance(cos_theta, ri);
-
-        vec3 direction;
-        vec3 attenuation;
-        if (cannot_refract || reflectance > random()) {
-            // specular reflect
-            direction = reflect(unit_direction, normal);
-            attenuation = vec3(1);
-        } else {
-            // refract
-            direction = refract(unit_direction, normal, ri);
-            attenuation = mix(texture_color, vec3(1), reflectance);  // blend based on Fresnel effect
-        }
-
-        Ray scattered = Ray(rec.p, direction);
-
-        return ScatterResult(true, scattered, attenuation);
+        return scatter_dielectric(r_in, rec, material, normal, texture_color);
     }
 
     return ScatterResult(false, Ray(vec3(0), vec3(0)), vec3(0));

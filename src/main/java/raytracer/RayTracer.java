@@ -170,13 +170,13 @@ public class RayTracer {
 
         spheresBuffer = new SpheresBuffer(
                 new Vector3f[]{
-                        new Vector3f(0, 0, -2)
+//                        new Vector3f(0, 0, -2)
                 },
                 new float[]{
-                        1
+//                        1
                 },
                 new int[]{
-                        1
+//                        1
                 }
         );
     }
