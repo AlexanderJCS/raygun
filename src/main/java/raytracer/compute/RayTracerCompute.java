@@ -1,4 +1,4 @@
-package raytracer.shaders;
+package raytracer.compute;
 
 import java.io.File;
 import java.io.FileNotFoundException;

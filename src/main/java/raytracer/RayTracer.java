@@ -5,7 +5,7 @@ import raytracer.buffers.*;
 import raytracer.config.RenderConfig;
 import raytracer.config.Savepoint;
 import raytracer.rendering.ScreenQuad;
-import raytracer.shaders.RayTracerCompute;
+import raytracer.compute.RayTracerCompute;
 import raytracer.rendering.TextureShader;
 import raytracer.rendering.ScreenTexture;
 import raytracer.texture.ArrayTexture;
