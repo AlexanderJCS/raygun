@@ -488,32 +488,48 @@ struct ScatterResult {
 };
 
 
+vec2 texture_uv(Ray r_in, HitRecord rec, int texture_id) {
+    if (texture_id == -1) {
+        return rec.uv;
+    }
+
+    mat3 tbn = mat3(rec.tangent, rec.bitangent, rec.normal);
+    vec3 view_dir_tangent = normalize(tbn * -normalize(r_in.direction));
+
+    // flip the view direction on the x axis if it's a triangle that's hit
+    // flip the view direction on the y axis if it's a sphere that's hit
+    // i have no idea why this needs to be different, but it works
+    view_dir_tangent *= rec.triangle_hit ? vec3(-1, 1, 1) : vec3(1, -1, 1);
+
+    return parallax_mapping(rec.uv, view_dir_tangent, texture_id);
+}
+
+
+vec3 texture_normal(HitRecord rec, vec2 uv, int texture_id) {
+    if (texture_id == -1) {
+        return rec.normal;
+    }
+
+    vec3 normal = texture(texture_normals, vec3(uv, texture_id)).xyz;
+    normal = normal * 2 - 1;
+    return calc_normal(normal, rec.tangent, rec.bitangent, rec.normal);
+}
+
 
 ScatterResult material_scatter(int material_id, Ray r_in, HitRecord rec) {
     Material material = materials[material_id];
     vec3 texture_color = material.albedo;
 
-    vec2 uv = rec.uv;
-    if (material.texture_id != -1) {
-        mat3 tbn = mat3(rec.tangent, rec.bitangent, rec.normal);
-        vec3 view_dir_tangent = normalize(tbn * -normalize(r_in.direction));
+    vec2 uv = texture_uv(r_in, rec, material.texture_id);
 
-        // flip the view direction on the x axis if it's a triangle that's hit
-        // flip the view direction on the y axis if it's a sphere that's hit
-        // i have no idea why this needs to be different, but it works
-        view_dir_tangent *= rec.triangle_hit ? vec3(-1, 1, 1) : vec3(1, -1, 1);
-
-        uv = parallax_mapping(rec.uv, view_dir_tangent, material.texture_id);
-
-        if (uv.x < 0 || uv.y < 0 || uv.x > 1 || uv.y > 1) {
-            // effectively discard the pixel if the texture coordinates are out of bounds
-            return ScatterResult(true, Ray(rec.p + r_in.direction * 0.001, r_in.direction), vec3(1));
-        } else {
-            texture_color = texture(texture_diffuse, vec3(uv, material.texture_id)).xyz;
-        }
+    if (uv.x < 0 || uv.y < 0 || uv.x > 1 || uv.y > 1) {
+        // effectively discard the pixel if the texture coordinates are out of bounds
+        return ScatterResult(true, Ray(rec.p + r_in.direction * 0.001, r_in.direction), vec3(1));
+    } else {
+        texture_color = texture(texture_diffuse, vec3(uv, material.texture_id)).xyz;
     }
 
-    vec3 normal = rec.normal;
+    vec3 normal = texture_normal(rec, uv, material.texture_id);
 
     if (material.texture_id != -1) {
         vec3 texture_normal = texture(texture_normals, vec3(uv, material.texture_id)).xyz;
