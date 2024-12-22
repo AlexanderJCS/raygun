@@ -14,36 +14,5 @@
     "defocusAngle": 2
   },
 
-  "savepoints": [
-    {
-      "path": "renders/xmas_tree_100.png",
-      "time": 100,
-      "unit": "frames"
-    },
-    {
-      "path": "renders/xmas_tree_1000.png",
-      "time": 1000,
-      "unit": "frames"
-    },
-    {
-      "path": "renders/xmas_tree_2000.png",
-      "time": 2000,
-      "unit": "frames"
-    },
-    {
-      "path": "renders/xmas_tree_4000.png",
-      "time": 4000,
-      "unit": "frames"
-    },
-    {
-      "path": "renders/xmas_tree_8000.png",
-      "time": 8000,
-      "unit": "frames"
-    },
-    {
-      "path": "renders/xmas_tree_16000.png",
-      "time": 16000,
-      "unit": "frames"
-    }
-  ]
+  "savepoints": []
 }
