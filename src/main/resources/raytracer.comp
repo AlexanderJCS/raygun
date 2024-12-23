@@ -499,7 +499,7 @@ vec2 texture_uv(Ray r_in, HitRecord rec, int texture_id) {
     // flip the view direction on the x axis if it's a triangle that's hit
     // flip the view direction on the y axis if it's a sphere that's hit
     // i have no idea why this needs to be different, but it works
-    view_dir_tangent *= rec.triangle_hit ? vec3(-1, 1, 1) : vec3(1, -1, 1);
+//    view_dir_tangent *= rec.triangle_hit ? vec3(-1, 1, 1) : vec3(1, -1, 1);
 
     return parallax_mapping(rec.uv, view_dir_tangent, texture_id);
 }
@@ -576,8 +576,10 @@ ScatterResult material_scatter(int material_id, Ray r_in, HitRecord rec) {
     if (uv.x < 0 || uv.y < 0 || uv.x > 1 || uv.y > 1) {
         // effectively discard the pixel if the texture coordinates are out of bounds
         return ScatterResult(true, Ray(rec.p + r_in.direction * 0.001, r_in.direction), vec3(1));
-    } else {
+    } else if (material.texture_id != -1) {
         texture_color = texture(texture_diffuse, vec3(uv, material.texture_id)).xyz;
+    } else {
+        texture_color = material.albedo;
     }
 
     vec3 normal = texture_normal(rec, uv, material.texture_id);
